@@ -675,7 +675,8 @@ function Info({
   onCopy,
   truncateLines = 1,
 }: {
-  icon: JSX.Element;
+  icon: React.ReactNode;
+
   label: string;
   value: string;
   onCopy: (t: string) => void;
