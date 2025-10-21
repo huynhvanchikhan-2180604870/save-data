@@ -1,58 +1,57 @@
-import { verifySession } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+// Cho phép preflight CORS
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
+}
+
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ username: string }> } // ✅ fix kiểu Promise
+  context: { params: Promise<{ username: string }> }
 ) {
   try {
-    const { username } = await context.params; // ✅ phải await
+    const { username } = await context.params;
 
-    // Lấy token từ header Authorization
-    const auth = req.headers.get("authorization");
-    const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-    if (!token)
-      return NextResponse.json({ error: "No token" }, { status: 401 });
-
-    // Xác thực token
-    const decoded = verifySession(token);
-    if (!decoded)
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-
-    // Chỉ cho phép user xem data của chính mình
-    if (decoded.username !== username)
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!username)
+      return NextResponse.json(
+        { error: "Missing username" },
+        { status: 400, headers: CORS_HEADERS }
+      );
 
     // Kết nối MongoDB
     const client = await clientPromise;
     const db = client.db("user_data");
     const collection = db.collection("records");
 
-    // Lấy tất cả record của user
+    // Tìm tất cả bản ghi theo username
     const records = await collection
       .find({ username })
       .sort({ createdAt: -1 })
       .toArray();
 
+    if (!records.length) {
+      return NextResponse.json(
+        { success: true, count: 0, data: [] },
+        { status: 200, headers: CORS_HEADERS }
+      );
+    }
+
     return NextResponse.json(
       { success: true, count: records.length, data: records },
-      { status: 200 }
+      { status: 200, headers: CORS_HEADERS }
     );
   } catch (error) {
     console.error("Fetch records error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
-}
-
-// Cho phép preflight CORS nếu bạn gọi từ domain khác
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    },
-  });
 }
