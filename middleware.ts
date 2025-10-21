@@ -1,23 +1,34 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  // Cho phép CORS từ mọi nguồn
-  const response = NextResponse.next();
+const SECRET = process.env.AUTH_SECRET!;
 
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
+export function middleware(req: NextRequest) {
+  const url = new URL(req.url);
+  const path = url.pathname;
 
-  return response;
+  // Chỉ bảo vệ đường dẫn /api/records/<teamName>
+  const match = path.match(/^\/api\/records\/([^\/]+)\/?$/);
+  if (!match) return NextResponse.next();
+
+  const teamParam = decodeURIComponent(match[1]);
+  const token = req.cookies.get("session")?.value;
+
+  if (!token)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const payload = jwt.verify(token, SECRET) as { teamName: string };
+    if (payload.teamName !== teamParam) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/api/records/:path*"],
 };

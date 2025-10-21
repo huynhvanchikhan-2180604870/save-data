@@ -1,8 +1,32 @@
 "use client";
 
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Copy,
+  CreditCard,
+  Download,
+  FileText,
+  KeyRound,
+  Landmark,
+  Lock,
+  LogIn,
+  LogOut,
+  Mail,
+  MapPin,
+  Phone,
+  RefreshCcw,
+  ShieldCheck,
+  User,
+  UserPlus,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-// Kiểu dữ liệu trả về từ API
+/* ================== Types ================== */
 type RecordItem = {
   hoVaTen: string;
   soTaiKhoan: string;
@@ -13,310 +37,836 @@ type RecordItem = {
   soPhien: string;
   soDienThoai: string;
   email: string;
-  ngaySinh: string; // "YYYY/MM/DD"
+  ngaySinh: string;
   rawData: string;
-  createdAt: string; // ISO
+  createdAt: string;
 };
 
-type SortState = { key: keyof RecordItem | ""; direction: "asc" | "desc" };
+type AuthMode = "login" | "register";
 
-export default function Home() {
+/* ================== Page ================== */
+export default function RecordsDashboard() {
+  // Accent: 1 màu, không neon/gradient
+  const accent = "rgb(59,130,246)"; // tailwind sky-500
+
+  // Auth
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [username, setUsername] = useState<string>("");
+
+  // Data/UI
   const [data, setData] = useState<RecordItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<SortState>({ key: "", direction: "asc" });
-  const [copied, setCopied] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState("");
+  const [toast, setToast] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
-  async function fetchData() {
-    try {
-      setLoading(true);
-      setErr(null);
-      const res = await fetch("/api/records", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      console.log("API response:", json.data);
-      // API có thể trả object đơn lẻ hoặc mảng -> chuẩn hoá thành mảng
-      const arr: RecordItem[] = Array.isArray(json.data)
-        ? json.data
-        : [json.data];
-      setData(arr);
-      console.log("Fetched records:", arr);
-    } catch (e: any) {
-      setErr(e?.message || "Fetch failed");
-    } finally {
-      setLoading(false);
-    }
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  // Modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+
+  /* ================== Helpers ================== */
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 1600);
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Tìm kiếm toàn văn (không phân biệt hoa/thường) trên tất cả field string
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return data;
-    return data.filter((item) =>
-      Object.values(item).some((v) =>
-        String(v ?? "")
-          .toLowerCase()
-          .includes(term)
-      )
-    );
-  }, [data, q]);
-
-  // Sắp xếp theo cột
-  const sorted = useMemo(() => {
-    if (!sort.key) return filtered;
-    const { key, direction } = sort;
-    return [...filtered].sort((a, b) => {
-      const va = String(a[key] ?? "");
-      const vb = String(b[key] ?? "");
-      // Nếu là createdAt thì so sánh thời gian
-      if (key === "createdAt") {
-        const ta = new Date(va).getTime();
-        const tb = new Date(vb).getTime();
-        return direction === "asc" ? ta - tb : tb - ta;
-      }
-      // Nếu là ngaySinh ("YYYY/MM/DD") thì so sánh theo chuỗi là ổn (đã chuẩn hoá)
-      if (key === "ngaySinh") {
-        return direction === "asc"
-          ? va.localeCompare(vb)
-          : vb.localeCompare(va);
-      }
-      // Mặc định so sánh chữ
-      return direction === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
-    });
-  }, [filtered, sort]);
-
-  function toggleSort(key: keyof RecordItem) {
-    setSort((prev) => {
-      if (prev.key !== key) return { key, direction: "asc" };
-      return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
-    });
-  }
-
-  async function copyText(text: string) {
+  async function copyText(t: string) {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(text);
-      setTimeout(() => setCopied(""), 1200);
+      await navigator.clipboard.writeText(t);
+      setCopied(t);
+      setTimeout(() => setCopied(""), 1100);
     } catch {
       // ignore
     }
   }
 
-  function caretFor(col: keyof RecordItem) {
-    if (sort.key !== col) return "↕";
-    return sort.direction === "asc" ? "↑" : "↓";
+  function getToken(): string | null {
+    try {
+      return localStorage.getItem("token");
+    } catch {
+      return null;
+    }
   }
 
-  function fmtDateISO(iso: string) {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    // dd/MM/yyyy HH:mm
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mi = String(d.getMinutes()).padStart(2, "0");
-    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  /* ================== Auth Calls ================== */
+  async function doLogin(user: string, pass: string) {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || "Login failed");
+
+    // Lưu token vào localStorage để giữ phiên
+    if (json?.token) localStorage.setItem("token", json.token);
+
+    return { username: json?.username ?? user };
   }
-  const startDownload = () => {
-    const link = document.createElement("a");
-    link.href = "/V2.zip"; // file trong /public/data.zip
-    link.download = "domibet_mod_offline.zip"; // tên file khi tải về
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+  async function doRegister(user: string, pass: string) {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || "Register failed");
+    return { username: json?.username ?? user };
+  }
+
+  async function doLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    } catch {}
+    localStorage.removeItem("token");
+    setIsAuthed(false);
+    setUsername("");
+    setData([]);
+    showToast("Đã đăng xuất");
+  }
+
+  async function fetchProfile(): Promise<string | null> {
+    const token = getToken();
+    if (!token) return null;
+
+    const res = await fetch("/api/auth/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      localStorage.removeItem("token");
+      return null;
+    }
+    const json = await res.json();
+    return json?.username ?? null;
+  }
+
+  /* ================== Data Fetch ================== */
+  async function fetchUserRecords(user: string) {
+    if (!user) return;
+    const token = getToken();
+    if (!token) {
+      setIsAuthed(false);
+      setUsername("");
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/records/${encodeURIComponent(user)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Fetch failed");
+      const payload = json?.data ?? json;
+      setData(Array.isArray(payload) ? payload : [payload]);
+    } catch (e: any) {
+      setData([]);
+      showToast(e?.message || "Không thể tải dữ liệu");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Khi load trang → auto-restore phiên từ localStorage
+  useEffect(() => {
+    (async () => {
+      const token = getToken();
+      if (!token) return; // chưa đăng nhập
+      const user = await fetchProfile();
+      if (user) {
+        setUsername(user);
+        setIsAuthed(true);
+        fetchUserRecords(user);
+      } else {
+        localStorage.removeItem("token");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Search
+  const filtered = useMemo(() => {
+    const term = q.toLowerCase().trim();
+    return term
+      ? data.filter((r) =>
+          Object.values(r).some((v) => String(v).toLowerCase().includes(term))
+        )
+      : data;
+  }, [q, data]);
+
+  // Reset page khi thay đổi từ khóa/pageSize
+  useEffect(() => {
+    setPage(1);
+  }, [q, pageSize]);
+
+  // Pagination calc
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, total);
+  const pageData = filtered.slice(startIdx, endIdx);
+
+  // Download ZIP theo username
+  const startDownload = async () => {
+    if (!isAuthed || !username) {
+      showToast("Vui lòng đăng nhập để tải file của bạn.");
+      setModalOpen(true);
+      setAuthMode("login");
+      return;
+    }
+    const zipPath = `/${encodeURIComponent(username)}.zip`;
+    try {
+      const head = await fetch(zipPath, { method: "HEAD", cache: "no-store" });
+      if (!head.ok) {
+        setErrorMsg(
+          `Không tìm thấy file "${username}.zip" trong thư mục public.`
+        );
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = zipPath;
+      a.download = `${username}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch {
+      setErrorMsg(
+        "Không thể kiểm tra/tải file. Kiểm tra lại kết nối hoặc tên file."
+      );
+    }
   };
-  const columns: { key: keyof RecordItem; label: string }[] = [
-    { key: "hoVaTen", label: "Họ và tên" },
-    { key: "soTaiKhoan", label: "Số tài khoản" },
-    { key: "tenNganHang", label: "Ngân hàng" },
-    { key: "chiNhanh", label: "Chi nhánh" },
-    { key: "tenDangNhap", label: "Tên đăng nhập" },
-    { key: "nickname", label: "Mật khẩu" },
-    { key: "soPhien", label: "Mật khẩu rút tiền" },
-    { key: "soDienThoai", label: "SĐT" },
-    { key: "email", label: "Email" },
-    { key: "ngaySinh", label: "Ngày sinh" },
-    { key: "createdAt", label: "Tạo lúc" },
-  ];
 
+  /* ================== UI ================== */
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-neutral-950 text-foreground">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-[#0e1218] text-white relative">
+      {/* glass utilities */}
+      <style jsx global>{`
+        .glass {
+          background: rgba(255, 255, 255, 0.21);
+          border-radius: 16px;
+          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+          backdrop-filter: blur(9.4px);
+          -webkit-backdrop-filter: blur(9.4px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .text-muted {
+          color: rgba(255, 255, 255, 0.86);
+        }
+        .text-dim {
+          color: rgba(255, 255, 255, 0.55);
+        }
+        .icon-dim {
+          color: rgba(255, 255, 255, 0.65);
+        }
+        .btn-outline {
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-outline:hover {
+          background: rgba(255, 255, 255, 0.16);
+        }
+        .btn-solid {
+          background: ${accent};
+          color: #0b1220;
+        }
+        .btn-solid:hover {
+          filter: brightness(0.95);
+        }
+      `}</style>
+
       <div className="mx-auto w-full max-w-7xl space-y-6">
         {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            📋 Danh sách Records
-          </h1>
-          <div className="flex gap-2">
-            <button
-              onClick={fetchData}
-              className="h-10 px-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition font-medium"
-            >
-              Làm mới
-            </button>
-            <button
-              onClick={startDownload}
-              className="h-10 px-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition font-medium"
-            >
-              Tải bản mới
-            </button>
-          </div>
-        </header>
-
-        {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-md">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm kiếm: tên, STK, ngân hàng, SĐT, email..."
-              className="w-full h-11 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur px-4 pr-10 outline-none focus:ring-2 ring-blue-500/50 transition"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-              ⌘K
-            </span>
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-semibold tracking-tight"
+              style={{ color: accent }}
+            >
+              Records Dashboard
+            </h1>
+            <p className="text-dim text-sm mt-1">
+              Liquid Glass · Mono Color · Professional
+            </p>
           </div>
 
-          <div className="text-sm text-neutral-500">
-            {loading
-              ? "Đang tải…"
-              : `${sorted.length} bản ghi${
-                  q ? ` (lọc từ ${data.length})` : ""
-                }`}
+          {/* Buttons group — responsive: full width on mobile */}
+          <div className="grid grid-cols-2 sm:flex gap-2 items-center w-full sm:w-auto">
+            {isAuthed ? (
+              <>
+                <div className="glass px-3 py-2 rounded-xl text-sm text-muted flex items-center gap-2 col-span-2 sm:col-span-1 w-full sm:w-auto">
+                  <ShieldCheck size={16} className="icon-dim" />
+                  <span className="font-medium">{username}</span>
+                </div>
+                <button
+                  onClick={() => fetchUserRecords(username)}
+                  className="glass btn-outline px-4 py-2 rounded-xl flex items-center gap-2 w-full sm:w-auto"
+                  title="Làm mới dữ liệu"
+                >
+                  <RefreshCcw size={16} className="icon-dim" />
+                  <span className="text-muted">Làm mới</span>
+                </button>
+                <button
+                  onClick={startDownload}
+                  className="btn-solid px-4 py-2 rounded-xl w-full sm:w-auto"
+                  title="Tải bản ZIP theo username"
+                >
+                  <span className="inline-flex items-center gap-2 font-semibold">
+                    <Download size={16} /> Tải bản mới
+                  </span>
+                </button>
+                <button
+                  onClick={doLogout}
+                  className="glass btn-outline px-4 py-2 rounded-xl flex items-center gap-2 w-full sm:w-auto"
+                  title="Đăng xuất"
+                >
+                  <LogOut size={16} className="icon-dim" />
+                  <span className="text-muted">Đăng xuất</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setAuthMode("login");
+                    setModalOpen(true);
+                  }}
+                  className="glass btn-outline px-4 py-2 rounded-xl flex items-center gap-2 w-full sm:w-auto"
+                  title="Đăng nhập"
+                >
+                  <LogIn size={16} className="icon-dim" />
+                  <span className="text-muted">Đăng nhập</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setAuthMode("register");
+                    setModalOpen(true);
+                  }}
+                  className="btn-solid px-4 py-2 rounded-xl w-full sm:w-auto"
+                  title="Đăng ký"
+                >
+                  <span className="inline-flex items-center gap-2 font-semibold">
+                    <UserPlus size={16} /> Đăng ký
+                  </span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Error */}
-        {err && (
-          <div className="rounded-xl border border-red-300/40 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-200 p-4">
-            Lỗi tải dữ liệu: {err}
+        {/* Error banner khi tải ZIP thất bại */}
+        {errorMsg && (
+          <div className="glass px-4 py-3 rounded-xl text-sm bg-white/80 border border-white/30 text-black">
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-black/80">{errorMsg}</div>
+              <button
+                onClick={() => setErrorMsg("")}
+                className="px-2 py-1 rounded-lg text-black/60 hover:text-black/80"
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Table (scrollable on mobile) */}
-        <div className="overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
-          <table className="min-w-[900px] w-full text-sm">
-            <thead className="bg-neutral-100/60 dark:bg-neutral-800/60">
-              <tr className="text-left">
-                {columns.map((c) => (
-                  <th
-                    key={String(c.key)}
-                    onClick={() => toggleSort(c.key)}
-                    title="Nhấn để sắp xếp"
-                    className="px-4 py-3 font-semibold select-none cursor-pointer whitespace-nowrap"
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      {c.label}
-                      <span className="text-neutral-400">
-                        {caretFor(c.key)}
-                      </span>
-                    </span>
-                  </th>
-                ))}
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">
-                  Raw
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + 1}
-                    className="px-4 py-8 text-center"
-                  >
-                    <span className="animate-pulse text-neutral-500">
-                      Đang tải dữ liệu…
-                    </span>
-                  </td>
-                </tr>
-              ) : sorted.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + 1}
-                    className="px-4 py-10 text-center text-neutral-500"
-                  >
-                    Không có dữ liệu.
-                  </td>
-                </tr>
-              ) : (
-                sorted.map((item, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-t border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition"
-                  >
-                    {/* Mỗi ô có onClick -> copy nội dung cột */}
-                    <TdCopy onCopy={copyText} text={item.hoVaTen} />
-                    <TdCopy onCopy={copyText} text={item.soTaiKhoan} />
-                    <TdCopy onCopy={copyText} text={item.tenNganHang} />
-                    <TdCopy onCopy={copyText} text={item.chiNhanh} />
-                    <TdCopy onCopy={copyText} text={item.tenDangNhap} />
-                    <TdCopy onCopy={copyText} text={item.nickname} />
-                    <TdCopy onCopy={copyText} text={item.soPhien} />
-                    <TdCopy onCopy={copyText} text={item.soDienThoai} />
-                    <TdCopy onCopy={copyText} text={item.email} />
-                    <TdCopy onCopy={copyText} text={item.ngaySinh} />
-                    <td
-                      className="px-4 py-3 whitespace-nowrap"
-                      title={item.createdAt}
-                      onClick={() => copyText(item.createdAt)}
-                    >
-                      {fmtDateISO(item.createdAt)}
-                    </td>
-                    <TdCopy
-                      onCopy={copyText}
-                      text={item.rawData}
-                      className="max-w-[260px] truncate"
-                    />
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* Toolbar: Search + page size */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="glass px-3 sm:px-4 py-2 rounded-2xl w-full sm:max-w-md">
+            <div className="flex items-center gap-2">
+              <User size={16} className="icon-dim" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Tìm kiếm: tên, STK, ngân hàng, SĐT, email..."
+                className="w-full bg-transparent outline-none placeholder:text-dim text-sm"
+                disabled={!isAuthed}
+              />
+            </div>
+          </div>
 
-        {/* Hint */}
-        <p className="text-xs text-neutral-500">
-          Mẹo: Nhấn vào bất kỳ ô nào để{" "}
-          <span className="font-semibold">copy</span> nhanh nội dung ô đó.
-        </p>
-      </div>
-
-      {/* Toast copy */}
-      {copied && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="px-4 py-2 rounded-full bg-neutral-900 text-white text-sm shadow-lg">
-            Đã copy: <span className="font-mono">{copied}</span>
+          <div className="glass px-3 py-2 rounded-2xl flex items-center justify-between sm:justify-start gap-3">
+            <span className="text-dim text-sm">Hiển thị</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="bg-transparent outline-none text-sm text-white"
+              disabled={!isAuthed}
+            >
+              <option value={12} className="bg-[#0e1218]">
+                12
+              </option>
+              <option value={24} className="bg-[#0e1218]">
+                24
+              </option>
+              <option value={48} className="bg-[#0e1218]">
+                48
+              </option>
+            </select>
+            <span className="text-dim text-sm">/ trang</span>
+            {isAuthed && (
+              <span className="hidden sm:inline text-dim text-sm">
+                · Tổng <span className="text-white">{filtered.length}</span>
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Content */}
+        {!isAuthed ? (
+          <EmptyState accent={accent} />
+        ) : loading ? (
+          <SkeletonGrid />
+        ) : total === 0 ? (
+          <div className="glass p-8 rounded-2xl text-center text-dim">
+            Không có dữ liệu phù hợp.
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {pageData.map((r, i) => (
+                <motion.div
+                  key={`${r.soTaiKhoan}-${i}`}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.25 }}
+                  className="glass p-4 sm:p-5 rounded-2xl"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <User size={18} className="icon-dim" />
+                      <h2
+                        className="text-base font-semibold"
+                        style={{ color: accent }}
+                      >
+                        {r.hoVaTen}
+                      </h2>
+                    </div>
+                    <span className="text-xs text-dim whitespace-nowrap">
+                      {new Date(r.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {/* Body */}
+                  <div className="mt-3 grid grid-cols-1 gap-1.5 text-sm">
+                    <Info
+                      label="Số TK"
+                      icon={<CreditCard size={15} />}
+                      value={r.soTaiKhoan}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Ngân hàng"
+                      icon={<Landmark size={15} />}
+                      value={r.tenNganHang}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Chi nhánh"
+                      icon={<MapPin size={15} />}
+                      value={r.chiNhanh}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Đăng nhập"
+                      icon={<KeyRound size={15} />}
+                      value={r.tenDangNhap}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Mật khẩu"
+                      icon={<Lock size={15} />}
+                      value={r.nickname}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Rút tiền"
+                      icon={<KeyRound size={15} />}
+                      value={r.soPhien}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="SĐT"
+                      icon={<Phone size={15} />}
+                      value={r.soDienThoai}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Email"
+                      icon={<Mail size={15} />}
+                      value={r.email}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="Ngày sinh"
+                      icon={<Calendar size={15} />}
+                      value={r.ngaySinh}
+                      onCopy={copyText}
+                    />
+                    <Info
+                      label="RawData"
+                      icon={<FileText size={15} />}
+                      value={r.rawData}
+                      onCopy={copyText}
+                      truncateLines={2}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
+              <div className="text-sm text-dim">
+                Hiển thị{" "}
+                <span className="text-white">
+                  {total === 0 ? 0 : startIdx + 1}
+                </span>
+                –<span className="text-white">{endIdx}</span> /{" "}
+                <span className="text-white">{total}</span> bản ghi
+              </div>
+
+              <div className="glass px-2 py-1 rounded-2xl inline-flex items-center gap-1 w-full sm:w-auto justify-center">
+                <PgBtn
+                  onClick={() => setPage(1)}
+                  disabled={currentPage === 1}
+                  title="Trang đầu"
+                >
+                  <ChevronsLeft size={16} />
+                </PgBtn>
+                <PgBtn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  title="Trang trước"
+                >
+                  <ChevronLeft size={16} />
+                </PgBtn>
+
+                <span className="px-3 text-sm">
+                  <span className="text-white">{currentPage}</span>
+                  <span className="text-dim"> / {totalPages}</span>
+                </span>
+
+                <PgBtn
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  title="Trang sau"
+                >
+                  <ChevronRight size={16} />
+                </PgBtn>
+                <PgBtn
+                  onClick={() => setPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  title="Trang cuối"
+                >
+                  <ChevronsRight size={16} />
+                </PgBtn>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Toasts */}
+        {copied && (
+          <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40">
+            <div className="glass px-4 py-2 rounded-xl flex items-center gap-2">
+              <Copy size={14} className="icon-dim" />
+              <span className="text-muted">
+                Đã copy: <span className="font-mono text-white">{copied}</span>
+              </span>
+            </div>
+          </div>
+        )}
+        {toast && (
+          <div className="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-12 z-40">
+            <div className="glass px-4 py-2 rounded-xl text-sm text-muted">
+              {toast}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ====== Auth Modal (username + password) ====== */}
+      {modalOpen && (
+        <AuthModal
+          accent={accent}
+          mode={authMode}
+          onClose={() => setModalOpen(false)}
+          onSwitchMode={(m) => setAuthMode(m)}
+          onSubmit={async (mode, form) => {
+            try {
+              let info: { username: string };
+              if (mode === "register") {
+                await doRegister(form.username, form.password);
+                info = await doLogin(form.username, form.password); // auto login
+              } else {
+                info = await doLogin(form.username, form.password);
+              }
+              setIsAuthed(true);
+              setUsername(info.username);
+              setModalOpen(false);
+              showToast("Đăng nhập thành công");
+              // nạp data ngay
+              fetchUserRecords(info.username);
+            } catch (e: any) {
+              showToast(e?.message || "Thao tác thất bại");
+            }
+          }}
+        />
       )}
     </div>
   );
 }
 
-// Ô bảng có chức năng copy
-function TdCopy({
-  text,
+/* ================== Reusable pieces ================== */
+function EmptyState({ accent }: { accent: string }) {
+  return (
+    <div className="glass p-8 sm:p-10 rounded-2xl text-center">
+      <div className="mx-auto max-w-md space-y-3">
+        <div
+          className="inline-flex items-center justify-center w-12 h-12 rounded-2xl"
+          style={{ background: "rgba(255,255,255,0.14)" }}
+        >
+          <User size={22} />
+        </div>
+        <h3 className="text-lg font-semibold" style={{ color: accent }}>
+          Chào mừng!
+        </h3>
+        <p className="text-dim text-sm">
+          Hãy đăng nhập để xem & quản lý các bản ghi của bạn. Giao diện tối
+          giản, liquid glass, tối ưu cho di động.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="glass p-5 rounded-2xl animate-pulse">
+          <div className="h-4 w-40 bg-white/20 rounded mb-4" />
+          <div className="space-y-2">
+            <div className="h-3 w-3/4 bg-white/15 rounded" />
+            <div className="h-3 w-2/3 bg-white/15 rounded" />
+            <div className="h-3 w-5/6 bg-white/15 rounded" />
+            <div className="h-3 w-1/2 bg-white/15 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Info({
+  icon,
+  label,
+  value,
   onCopy,
-  className = "",
+  truncateLines = 1,
 }: {
-  text: string;
+  icon: JSX.Element;
+  label: string;
+  value: string;
   onCopy: (t: string) => void;
-  className?: string;
+  truncateLines?: 1 | 2 | 3;
 }) {
   return (
-    <td
-      className={`px-4 py-3 whitespace-nowrap cursor-copy ${className}`}
+    <div
+      className="flex items-start justify-between gap-3 cursor-pointer group"
+      onClick={() => onCopy(value)}
       title="Nhấn để copy"
-      onClick={() => onCopy(text)}
     >
-      {text}
-    </td>
+      <div className="flex items-center gap-2 text-dim group-hover:text-muted transition">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <span
+        className="text-sm text-white/90 font-medium text-right"
+        style={{
+          display: "-webkit-box",
+          WebkitLineClamp: truncateLines,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          maxWidth: "62%",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function PgBtn({
+  children,
+  onClick,
+  disabled,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={`px-2.5 py-1.5 rounded-xl inline-flex items-center justify-center ${
+        disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-white/15"
+      }`}
+      style={{
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(255,255,255,0.10)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ================== Auth Modal ================== */
+function AuthModal({
+  mode,
+  accent,
+  onClose,
+  onSwitchMode,
+  onSubmit,
+}: {
+  mode: "login" | "register";
+  accent: string;
+  onClose: () => void;
+  onSwitchMode: (m: AuthMode) => void;
+  onSubmit: (
+    mode: AuthMode,
+    form: { username: string; password: string }
+  ) => Promise<void>;
+}) {
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.username || !form.password) return;
+    setSubmitting(true);
+    try {
+      await onSubmit(mode, form);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass w-full max-w-md rounded-2xl p-6 relative"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold" style={{ color: accent }}>
+            {mode === "login" ? "Đăng nhập" : "Đăng ký"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-dim hover:text-muted transition px-2 py-1 rounded-lg"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Field
+            label="Tài khoản"
+            placeholder="vd: johndoe"
+            value={form.username}
+            onChange={(v) => setForm((s) => ({ ...s, username: v }))}
+          />
+          <Field
+            label="Mật khẩu"
+            type="password"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={(v) => setForm((s) => ({ ...s, password: v }))}
+          />
+
+          <div className="flex items-center justify-between pt-2 gap-3">
+            <button
+              type="button"
+              className="text-sm text-dim hover:text-muted underline-offset-4 hover:underline"
+              onClick={() =>
+                onSwitchMode(mode === "login" ? "register" : "login")
+              }
+            >
+              {mode === "login"
+                ? "Chưa có tài khoản? Đăng ký"
+                : "Đã có tài khoản? Đăng nhập"}
+            </button>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-solid px-4 py-2 rounded-xl font-semibold"
+              style={{ background: accent, color: "#0b1220" }}
+            >
+              <span className="inline-flex items-center gap-2">
+                {mode === "login" ? (
+                  <LogIn size={16} />
+                ) : (
+                  <UserPlus size={16} />
+                )}
+                {submitting
+                  ? "Đang xử lý..."
+                  : mode === "login"
+                  ? "Đăng nhập"
+                  : "Đăng ký"}
+              </span>
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  placeholder,
+  value,
+  onChange,
+  type = "text",
+}: {
+  label: string;
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
+  return (
+    <div>
+      <div className="text-sm text-dim mb-1">{label}</div>
+      <div className="glass px-3 py-2 rounded-xl">
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-transparent outline-none placeholder:text-dim"
+        />
+      </div>
+    </div>
   );
 }
