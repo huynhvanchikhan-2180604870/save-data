@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { username: string } }
+  context: { params: Promise<{ username: string }> } // ✅ fix kiểu Promise
 ) {
   try {
-    const { username } = params;
+    const { username } = await context.params; // ✅ phải await
+
     const { data } = await req.json();
 
     if (!username)
@@ -17,6 +18,7 @@ export async function POST(
         { status: 400 }
       );
 
+    // Tách chuỗi dữ liệu theo dấu "|"
     const parts = data.split("|");
     if (parts.length !== 10)
       return NextResponse.json(
@@ -24,6 +26,7 @@ export async function POST(
         { status: 400 }
       );
 
+    // Tạo object record
     const record = {
       username,
       hoVaTen: parts[0].trim(),
@@ -40,11 +43,13 @@ export async function POST(
       createdAt: new Date(),
     };
 
+    // Kết nối MongoDB
     const client = await clientPromise;
     const db = client.db("user_data");
     const collection = db.collection("records");
 
     await collection.insertOne(record);
+
     return NextResponse.json(
       { success: true, message: "Saved successfully" },
       { status: 201 }
@@ -53,4 +58,16 @@ export async function POST(
     console.error("Save record error:", error);
     return NextResponse.json({ error: "Failed to save" }, { status: 500 });
   }
+}
+
+// CORS support (optional)
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
 }
