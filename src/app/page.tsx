@@ -123,7 +123,14 @@ export default function Home() {
     const mi = String(d.getMinutes()).padStart(2, "0");
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }
-
+  const startDownload = () => {
+    const link = document.createElement("a");
+    link.href = "/V2.zip"; // file trong /public/data.zip
+    link.download = "domibet_mod_offline.zip"; // tên file khi tải về
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const columns: { key: keyof RecordItem; label: string }[] = [
     { key: "hoVaTen", label: "Họ và tên" },
     { key: "soTaiKhoan", label: "Số tài khoản" },
@@ -152,6 +159,12 @@ export default function Home() {
               className="h-10 px-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition font-medium"
             >
               Làm mới
+            </button>
+            <button
+              onClick={startDownload}
+              className="h-10 px-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition font-medium"
+            >
+              Tải bản mới
             </button>
           </div>
         </header>
