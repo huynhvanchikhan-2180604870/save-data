@@ -156,6 +156,7 @@ export default function RecordsDashboard() {
       setUsername("");
       return;
     }
+    console.log("Fetching records for", user);
     try {
       setLoading(true);
       const res = await fetch(`/api/records/${encodeURIComponent(user)}`, {
