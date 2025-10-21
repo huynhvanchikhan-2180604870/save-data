@@ -1,32 +1,42 @@
 import clientPromise from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
+}
+
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ username: string }> } // ✅ fix kiểu Promise
+  context: { params: Promise<{ username: string }> }
 ) {
   try {
-    const { username } = await context.params; // ✅ phải await
-
+    const { username } = await context.params;
     const { data } = await req.json();
 
     if (!username)
-      return NextResponse.json({ error: "Missing username" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing username" },
+        { status: 400, headers: CORS_HEADERS }
+      );
     if (!data || typeof data !== "string")
       return NextResponse.json(
         { error: "Invalid data string" },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
 
-    // Tách chuỗi dữ liệu theo dấu "|"
     const parts = data.split("|");
     if (parts.length !== 10)
       return NextResponse.json(
         { error: "Data must have 10 fields" },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
 
-    // Tạo object record
     const record = {
       username,
       hoVaTen: parts[0].trim(),
@@ -43,7 +53,6 @@ export async function POST(
       createdAt: new Date(),
     };
 
-    // Kết nối MongoDB
     const client = await clientPromise;
     const db = client.db("user_data");
     const collection = db.collection("records");
@@ -52,22 +61,13 @@ export async function POST(
 
     return NextResponse.json(
       { success: true, message: "Saved successfully" },
-      { status: 201 }
+      { status: 201, headers: CORS_HEADERS }
     );
   } catch (error) {
     console.error("Save record error:", error);
-    return NextResponse.json({ error: "Failed to save" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save" },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
-}
-
-// CORS support (optional)
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }
