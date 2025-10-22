@@ -1,0 +1,28 @@
+{
+  "timeouts": {
+    "pageLoad": 20000,
+    "elementWait": 3900,
+    "captchaSolve": 15000,
+    "formSubmit": 6000,
+    "delayBetweenActions": 1000,
+    "delayBetweenSteps": 2000
+  },
+  "retries": {
+    "maxRetries": 2,
+    "retryDelay": 1000,
+    "captchaMaxRetries": 2
+  },
+  "notifications": {
+    "showProgress": true,
+    "showErrors": true,
+    "showSuccess": false,
+    "groupNotifications": true,
+    "notificationTimeout": 3000
+  },
+  "automation": {
+    "closeAdsEnabled": true,
+    "solveCaptchaEnabled": true,
+    "autoSubmitEnabled": true,
+    "waitForElements": true
+  }
+}

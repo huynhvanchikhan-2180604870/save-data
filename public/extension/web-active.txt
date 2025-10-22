@@ -1,0 +1,45 @@
+Những page vào được
+
+Quy trình: Đăng ký tài khoản -> Nhập mật khẩu rút tiền -> thêm tài khoản ngân hàng -> Rút tiền -> Chuyển tiền
+
+mb66 - đã test ok
+f8bet - đã test ok
+hello
+hubet
+78win
+
+QQ88 - https://www.qq8886.com/m/register - form khác lạ nhập ko đc
+KL99 - https://m.kl99.cooking/Account/Register - đã test ok
+MMOO - https://m.mmoo.love/Account/Register - đã test ok
+
+23wwin - https://m.23win5.net/Account/Register - đã test ok
+32win - https://m.32w32.com/Account/Register - lỗi 403 khi đăng ký
+J88 - https://m.j852.xyz/Account/Register - cái này sai link (cần chỉnhh lại)
+Nohu - https://m.88188888.com/Account/Register - đã test ok
+go9 - https://m.99990999.com/Account/Register - đã test ok
+TTB - https://m.62222226.com/Account/Register - đã test ok
+
+
+HỌ và tên | stk |tên bank | chi nhánh | username | pass 1 | pass rút  | sđt | gmail | năm sinh
+
+THOI CHIEN SU | 009989877789876 | SCB | master4876878@gmail.com | w897cb5io8t | xi1MB3kOu | 
+xi1MB3kOu | xi1MB3kOu | THOI CHIEN SU | 0337680520 | 26/09/1971 | master4876878@gmail.com | 
+Sở giao dịch Thừa Thiên Huế
+
+ ['https:', '', 'f16878.vip', '']
+
+==================================
+F8bet -> ok 
+789bet -> lỗi 403
+Hello -> oke
+Hubet -> lỗi không vào được trang
+king88 -> oke
+89bet -> oke 
+J88  -> oke
+U88 -> oke
+88CLB -> m.88ef cái này chỗ register nó ko vào được
+ABC -> lỗi load không lên page
+Shbet -> oke
+Mb66 -> oke
+New88 -> oke
+Hi88 -> oke

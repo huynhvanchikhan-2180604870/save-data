@@ -324,29 +324,51 @@ export default function DashboardTabs() {
   const pageData = filtered.slice(startIdx, endIdx);
 
   // Download ZIP theo username
+  // const startDownload = async () => {
+  //   if (!isAuthed || !username) {
+  //     showToast("Vui lòng đăng nhập để tải file của bạn.");
+  //     setModalOpen(true);
+  //     setAuthMode("login");
+  //     return;
+  //   }
+  //   const zipPath = `/${encodeURIComponent(username)}.zip`;
+  //   try {
+  //     const head = await fetch(zipPath, { method: "HEAD", cache: "no-store" });
+  //     if (!head.ok) {
+  //       // dùng toast chuyên nghiệp theo yêu cầu
+  //       showToast("Không tìm thấy tài nguyên");
+  //       return;
+  //     }
+  //     const a = document.createElement("a");
+  //     a.href = zipPath;
+  //     a.download = `${username}.zip`;
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     a.remove();
+  //   } catch {
+  //     showToast("Không tìm thấy tài nguyên");
+  //   }
+  // };
   const startDownload = async () => {
     if (!isAuthed || !username) {
-      showToast("Vui lòng đăng nhập để tải file của bạn.");
-      setModalOpen(true);
+      showToast("Vui lòng đăng nhập để tải.");
       setAuthMode("login");
+      setModalOpen(true);
       return;
     }
-    const zipPath = `/${encodeURIComponent(username)}.zip`;
     try {
-      const head = await fetch(zipPath, { method: "HEAD", cache: "no-store" });
-      if (!head.ok) {
-        // dùng toast chuyên nghiệp theo yêu cầu
-        showToast("Không tìm thấy tài nguyên");
-        return;
-      }
+      const url = `/api/extension/download?username=${encodeURIComponent(
+        username
+      )}`;
+      // Cho phép đặt tên từ header Content-Disposition, chỉ cần mở link:
       const a = document.createElement("a");
-      a.href = zipPath;
-      a.download = `${username}.zip`;
+      a.href = url;
+      a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
       a.remove();
     } catch {
-      showToast("Không tìm thấy tài nguyên");
+      showToast("Không thể tải file");
     }
   };
 
