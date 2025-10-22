@@ -1,6 +1,6 @@
 let APIKEY_CAPCHA = "ec53477299cfbbf89cd4bb66d21de723";
 let USERNAME_TEAM = "";
-let API_BASE = "https://your-domain.com/api/links";
+let API_BASE = "https://save-data-tau.vercel.app/api/links";
 
 async function loadTokenAndLink() {
   try {
