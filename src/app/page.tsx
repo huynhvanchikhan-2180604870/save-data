@@ -87,6 +87,7 @@ export default function DashboardTabs() {
   const [linkSearch, setLinkSearch] = useState("");
   const [linkForm, setLinkForm] = useState({ name: "", link: "" });
   const [linkSubmitting, setLinkSubmitting] = useState(false);
+  const [blocked, setBlocked] = useState<boolean>(false);
 
   /* ================== Global styles (Liquid Glass) ================== */
   useEffect(() => {
@@ -129,13 +130,14 @@ export default function DashboardTabs() {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || "Login failed");
 
-    // Lưu token vào localStorage để giữ phiên
     if (json?.token) localStorage.setItem("token", json.token);
-
-    // Lưu username để dùng bên Links
     localStorage.setItem("username", json?.username ?? user);
 
-    return { username: json?.username ?? user };
+    // ⬅️ trả kèm blocked
+    return {
+      username: json?.username ?? user,
+      blocked: Boolean(json?.blocked),
+    };
   }
 
   async function doRegister(user: string, pass: string) {
@@ -146,7 +148,7 @@ export default function DashboardTabs() {
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || "Register failed");
-    return { username: json?.username ?? user };
+    return { username: user };
   }
 
   async function doLogout() {
@@ -162,7 +164,10 @@ export default function DashboardTabs() {
     showToast("Đã đăng xuất");
   }
 
-  async function fetchProfile(): Promise<string | null> {
+  async function fetchProfile(): Promise<{
+    username: string;
+    blocked: boolean;
+  } | null> {
     const token = getToken();
     if (!token) return null;
 
@@ -175,7 +180,9 @@ export default function DashboardTabs() {
       return null;
     }
     const json = await res.json();
-    return json?.username ?? null;
+    return json?.username
+      ? { username: json.username, blocked: Boolean(json.blocked) }
+      : null;
   }
 
   /* ================== Records Data Fetch ================== */
@@ -285,13 +292,13 @@ export default function DashboardTabs() {
     (async () => {
       const token = getToken();
       if (!token) return; // chưa đăng nhập
-      const user = await fetchProfile();
-      if (user) {
-        setUsername(user);
+      const prof = await fetchProfile();
+      if (prof) {
+        setUsername(prof.username);
+        setBlocked(prof.blocked); // ⬅️ lưu blocked
         setIsAuthed(true);
-        // fetch cả 2 tab ngay từ đầu
-        fetchUserRecords(user);
-        fetchAllLinks(user);
+        fetchUserRecords(prof.username);
+        fetchAllLinks(prof.username);
       } else {
         localStorage.removeItem("token");
         localStorage.removeItem("username");
@@ -385,6 +392,19 @@ export default function DashboardTabs() {
           -webkit-backdrop-filter: blur(9.4px);
           border: 1px solid rgba(255, 255, 255, 0.18);
         }
+        .btn-danger {
+          background: #ef4444; /* red-500 */
+          color: #0b1220;
+        }
+        .btn-danger:hover {
+          filter: brightness(0.95);
+        }
+        .btn-danger:disabled,
+        .btn-solid:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .text-muted {
           color: rgba(255, 255, 255, 0.86);
         }
@@ -454,6 +474,7 @@ export default function DashboardTabs() {
           setAuthMode("register");
           setModalOpen(true);
         }}
+        isBlocked={blocked} // ⬅️ truyền vào
       />
 
       {/* Main content */}
@@ -517,7 +538,7 @@ export default function DashboardTabs() {
           onSwitchMode={(m) => setAuthMode(m)}
           onSubmit={async (mode, form) => {
             try {
-              let info: { username: string };
+              let info: { username: string; blocked?: boolean };
               if (mode === "register") {
                 await doRegister(form.username, form.password);
                 info = await doLogin(form.username, form.password); // auto login
@@ -526,9 +547,17 @@ export default function DashboardTabs() {
               }
               setIsAuthed(true);
               setUsername(info.username);
+              setBlocked(Boolean(info.blocked)); // ⬅️ lưu blocked
               setModalOpen(false);
-              showToast("Đăng nhập thành công");
-              // nạp data cả 2 tab
+
+              if (info.blocked) {
+                showToast(
+                  "Tài khoản đang bị chặn. Bạn chưa thể tải extension."
+                );
+              } else {
+                showToast("Đăng nhập thành công");
+              }
+
               fetchUserRecords(info.username);
               fetchAllLinks(info.username);
             } catch (e: any) {
@@ -1286,6 +1315,7 @@ function HeaderBar({
   onLogout,
   onOpenLogin,
   onOpenRegister,
+  isBlocked, // ⬅️ thêm
 }: {
   accent: string;
   isAuthed: boolean;
@@ -1297,6 +1327,7 @@ function HeaderBar({
   onLogout: () => void;
   onOpenLogin: () => void;
   onOpenRegister: () => void;
+  isBlocked: boolean; // ⬅️ thêm
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -1340,11 +1371,19 @@ function HeaderBar({
                 </button>
                 <button
                   onClick={onDownload}
-                  className="btn-solid px-4 py-2 rounded-xl"
-                  title="Tải bản ZIP theo username"
+                  disabled={isBlocked}
+                  className={`${
+                    isBlocked ? "btn-danger" : "btn-solid"
+                  } px-4 py-2 rounded-xl`}
+                  title={
+                    isBlocked
+                      ? "Tài khoản đang bị chặn — cần Active để tải"
+                      : "Tải bản ZIP theo username"
+                  }
                 >
                   <span className="inline-flex items-center gap-2 font-semibold">
-                    <Download size={16} /> Tải bản mới
+                    <Download size={16} />{" "}
+                    {isBlocked ? "Bị chặn" : "Tải bản mới"}
                   </span>
                 </button>
                 <button
@@ -1449,9 +1488,17 @@ function HeaderBar({
                     </button>
                     <button
                       onClick={onDownload}
-                      className="btn-solid px-3 py-2 rounded-xl"
+                      disabled={isBlocked}
+                      className={`${
+                        isBlocked ? "btn-danger" : "btn-solid"
+                      } px-3 py-2 rounded-xl`}
+                      title={
+                        isBlocked
+                          ? "Tài khoản đang bị chặn — cần Active để tải"
+                          : "Tải ZIP"
+                      }
                     >
-                      Tải ZIP
+                      {isBlocked ? "Bị chặn" : "Tải ZIP"}
                     </button>
                     <button
                       onClick={onLogout}
