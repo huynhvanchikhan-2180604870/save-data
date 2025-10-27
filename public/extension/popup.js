@@ -24,7 +24,6 @@ async function loadTokenAndLink() {
 // Khi extension khởi động
 document.addEventListener("DOMContentLoaded", () => {
   loadTokenAndLink();
-  console.log("offline");
 });
 // Improved popup.js with progress tracking and better UX
 
@@ -1831,7 +1830,7 @@ function randomDate() {
   // Định dạng ngẫu nhiên: yyyy/mm/dd hoặc dd/mm/yyyy hoặc yyyy-mm-dd
   const style = Math.random();
   if (style < 0.33) return `${y}/${m}/${d}`;
-  if (style < 0.66) return `${d}/${m}/${y}`;
+  if (style < 0.66) return `${y}/${m}/${d}`;
   return `${y}/${m}/${d}`;
 }
 
@@ -1897,7 +1896,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Gọi API check
 
         const data = true;
-        if (data === true) {
+        if (data === true || data.success === true) {
           const val = document.getElementById("bulkInput_create_data").value;
           const userName = document
             .getElementById("user_name_bank_account")
@@ -1926,6 +1925,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Mirror dữ liệu vừa tạo sang bulkInput chính
           const mainBulk = document.getElementById("bulkInput");
           if (mainBulk) mainBulk.value = val;
+
           try {
             const res = await fetch(
               `https://save-data-tau.vercel.app/api/save/${USERNAME_TEAM}`,
@@ -2060,12 +2060,11 @@ async function init() {
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
       try {
-        // Gọi API để check
+        // Gọi API check
 
-        const data = true; // Giả sử API trả về { "success": true } hoặc chỉ true/false
-
+        const data = true;
         // Nếu API trả về true thì lưu
-        if (data === true) {
+        if (data === true || data.success === true) {
           const bi = document.getElementById("bulkInput");
           const val = bi ? bi.value : "";
           await chrome.storage.local.set({ bulkInputCreateData: val });
@@ -2124,18 +2123,12 @@ async function loadSiteList() {
         headers: { "Content-Type": "application/json" },
       }
     );
-
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status} - ${text}`);
     }
     const json = await res.json();
     const results = (json.data || []).map(({ name, link }) => ({ name, link }));
-
-    // results.push({
-    //   name: "RR88",
-    //   link: "https://rr88seo.rr1083.com/m/register",
-    // });
 
     if (results.length === 0) {
       document.getElementById("output").innerText =
@@ -2598,21 +2591,9 @@ async function loadConfig() {
 
 async function solveCaptchaCommon() {
   try {
-    // const listCaptchaClick = [
-    //   "input[formcontrolname='checkCode']",
-    //   "input[ng-model='$ctrl.code']",
-    // ];
-    // listCaptchaClick.forEach((selector) => {
-    //   const input = document.querySelector(selector);
-    //   if (input) {
-    //     input.click();
-    //   }
-    // });
-
     showNotification(`Bắt đầu giải captcha`, "success");
 
     // 1. Gọi API JSON từ server bạn
-
     const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
 
     if (!apikey) return alert("❌ Không lấy được API key");
@@ -3741,3 +3722,269 @@ document
 document
   .getElementById("btnRUTTIEN")
   .addEventListener("click", () => openInCurrentTab("/Financial?tab=2"));
+
+// Phần đăng nhập nhanh
+// ==========================================
+// Hàm tạm dừng (delay)
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function setBusy(isBusy) {
+  const quick = document.getElementById("quickLogin");
+  if (!quick) return;
+  quick.disabled = isBusy;
+  quick.textContent = isBusy ? "⏳ Đang xử lý..." : "⚡ Đăng nhập nhanh";
+}
+
+// ==========================================
+// Helper: chờ đến khi selector xuất hiện hoặc timeout
+async function waitForSelectorInPage(tabId, selectors, timeout = 4000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const found = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (sels) => {
+        for (const s of sels) {
+          const el = document.querySelector(s);
+          if (el) return s;
+        }
+        return null;
+      },
+      args: [selectors],
+    });
+    if (found && found.length && found[0].result) return found[0].result;
+    await sleep(200);
+  }
+  return null;
+}
+
+// ==========================================
+// 🧩 Nút "Giải mã captcha" → chạm/tap để hiện captcha, click vào ô và gõ "12345" như người thật
+document.getElementById("solveCaptcha")?.addEventListener("click", async () => {
+  try {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (!tab || !tab.id) return;
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        // Hàm mô phỏng touch + mouse click tại tọa độ giữa element
+        function simulateTap(el) {
+          const rect = el.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+
+          // Touch events (mobile-like)
+          try {
+            const touchObj = new Touch({
+              identifier: Date.now(),
+              target: el,
+              clientX: cx,
+              clientY: cy,
+              radiusX: 2,
+              radiusY: 2,
+              rotationAngle: 0,
+              force: 0.5,
+            });
+            const touchStart = new TouchEvent("touchstart", {
+              bubbles: true,
+              cancelable: true,
+              touches: [touchObj],
+              targetTouches: [touchObj],
+              changedTouches: [touchObj],
+            });
+            const touchEnd = new TouchEvent("touchend", {
+              bubbles: true,
+              cancelable: true,
+              touches: [],
+              targetTouches: [],
+              changedTouches: [touchObj],
+            });
+            el.dispatchEvent(touchStart);
+            el.dispatchEvent(touchEnd);
+          } catch (e) {
+            // Touch constructor may not be available in all contexts -> ignore
+          }
+
+          // Mouse click as fallback
+          const options = {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: cx,
+            clientY: cy,
+          };
+          el.dispatchEvent(new MouseEvent("mousedown", options));
+          el.dispatchEvent(new MouseEvent("mouseup", options));
+          el.dispatchEvent(new MouseEvent("click", options));
+        }
+
+        // Tập hợp các selector có thể là vùng kích hoạt captcha
+        const possibleSelectors = [
+          'input[formcontrolname="checkCode"]',
+          'input[placeholder*="MÃ XÁC MINH"]',
+          'input[placeholder*="Mã xác minh"]',
+          ".captcha-wrapper",
+          ".box-captcha",
+          ".thumb-captcha",
+          ".refresh-captcha",
+          ".captcha-refresh",
+          "img.image-captcha",
+          'img[alt*="captcha"]',
+        ];
+
+        // Tìm element ưu tiên: wrapper hoặc input
+        let el = null;
+        for (const s of possibleSelectors) {
+          el = document.querySelector(s);
+          if (el) break;
+        }
+
+        // Nếu tìm thấy wrapper/refresh/icon thì tap vào nó
+        if (el) {
+          simulateTap(el);
+          // nếu el là input thì focus để hiển thị caret
+          if (el.tagName && el.tagName.toLowerCase() === "input") {
+            el.focus();
+            el.dispatchEvent(new Event("focus", { bubbles: true }));
+          }
+          console.log("Đã simulate tap vào element để hiện captcha:", el);
+        } else {
+          console.log(
+            "Không tìm thấy element kích hoạt captcha (tìm theo danh sách selector)."
+          );
+        }
+      },
+    });
+
+    // Sau khi tap, chờ ảnh captcha xuất hiện (nhiều trang có img.image-captcha hoặc img[alt*=captcha])
+    const foundSelector = await waitForSelectorInPage(
+      tab.id,
+      ["img.image-captcha", 'img[alt*="captcha"]', ".thumb-captcha img"],
+      4000
+    );
+
+    // Nếu ảnh xuất hiện, chờ thêm tí để render xong
+    if (foundSelector) {
+      await sleep(300 + randBetween(50, 250));
+    } else {
+      // Nếu không thấy ảnh, vẫn tiếp tục: chờ 300ms để đảm bảo input được focus
+      await sleep(300);
+    }
+
+    // Bây giờ thực hiện click thật vào ô input và gõ từng ký tự
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+        // Tìm input theo nhiều selector
+        const inputSelectors = [
+          'input[formcontrolname="checkCode"]',
+          'input[placeholder*="MÃ XÁC MINH"]',
+          'input[placeholder*="Mã xác minh"]',
+          'input[type="text"].ng-pristine',
+        ];
+        let input = null;
+        for (const s of inputSelectors) {
+          input = document.querySelector(s);
+          if (input) break;
+        }
+        if (!input) {
+          console.log("Không tìm thấy ô input để gõ captcha.");
+          return;
+        }
+
+        // Click thật vào giữa input
+        const rect = input.getBoundingClientRect();
+        const clickEvent = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+        });
+        input.dispatchEvent(clickEvent);
+        input.focus();
+
+        // Gõ từng ký tự như người thật với delay ngẫu nhiên nhỏ
+        const text = "12345";
+        input.value = ""; // xóa trước
+        for (const ch of text) {
+          const keydown = new KeyboardEvent("keydown", {
+            key: ch,
+            bubbles: true,
+            cancelable: true,
+          });
+          const keypress = new KeyboardEvent("keypress", {
+            key: ch,
+            bubbles: true,
+            cancelable: true,
+          });
+          input.dispatchEvent(keydown);
+          input.value += ch;
+          // InputEvent để frameworks bắt đúng
+          const inputEvent = new InputEvent("input", {
+            data: ch,
+            bubbles: true,
+            cancelable: true,
+          });
+          input.dispatchEvent(inputEvent);
+          input.dispatchEvent(keypress);
+          input.dispatchEvent(
+            new KeyboardEvent("keyup", { key: ch, bubbles: true })
+          );
+          // delay giống người gõ
+          await sleep(100 + Math.floor(Math.random() * 120));
+        }
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        console.log('Đã gõ "12345" vào ô captcha');
+      },
+    });
+  } catch (err) {
+    console.error("Lỗi khi thực hiện show+type captcha:", err);
+  }
+});
+
+// ==========================================
+// ⚡ Nút "Đăng nhập nhanh" → chạy tuần tự 3 bước (sử dụng solveCaptcha)
+document.getElementById("quickLogin")?.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const btnLogin = document.getElementById("input_login");
+    const btnCaptcha = document.getElementById("solveCaptcha");
+    const btnSubmit = document.getElementById("submitForm");
+
+    if (!btnLogin || !btnCaptcha || !btnSubmit) {
+      alert("Không tìm thấy một trong các nút. Kiểm tra lại id của các nút.");
+      return;
+    }
+
+    // 1️⃣ Nhập login
+    btnLogin.click();
+    await sleep(1500);
+
+    // 2️⃣ Giải captcha (chạm để hiện -> gõ)
+    btnCaptcha.click();
+    // chờ đủ thời gian để captcha hiển thị và gõ xong
+    await sleep(2600);
+
+    // 3️⃣ Submit form
+    btnSubmit.click();
+
+    await sleep(800);
+    console.log("✅ Đăng nhập nhanh: đã click tuần tự 3 bước.");
+  } catch (err) {
+    console.error("❌ Lỗi khi thực hiện Đăng nhập nhanh:", err);
+    alert("Lỗi: " + err.message);
+  } finally {
+    setBusy(false);
+  }
+});

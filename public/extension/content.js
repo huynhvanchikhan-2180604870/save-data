@@ -501,7 +501,10 @@ function setupAutoFillWithdraw() {
 // - background/service worker must handle message { action: 'fetchImageAsBase64', url } and return { ok, base64, mime }.
 // - manifest must include proper host_permissions and this file as a content_script.
 
-const DEFAULT_API_KEY = 'acd89898bf01aea4603fd79f6ac8263b';
+
+
+
+
 const API_URL = 'https://anticaptcha.top/api/captcha';
 
 if (!window.__captchaQuickButtonInjected) {
@@ -604,22 +607,44 @@ if (!window.__captchaQuickButtonInjected) {
       });
     }
 
-    // Get API key stored or fallback to default
-    function getApiKeyFromStorage() {
-      return new Promise((resolve) => {
-        try {
-          if (chrome?.storage?.sync) {
-            chrome.storage.sync.get(['anticaptcha_apikey'], (data) => {
-              resolve(data?.anticaptcha_apikey || DEFAULT_API_KEY);
-            });
-          } else {
-            resolve(localStorage.getItem('anticaptcha_apikey') || DEFAULT_API_KEY);
-          }
-        } catch (e) {
-          resolve(DEFAULT_API_KEY);
-        }
-      });
+async function loadDefaultApiKey() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ action: "getApiKey" }, (res) => {
+      if (res?.success) {
+        console.log("✅ Lấy key từ background:", res.apiKey);
+        resolve(res.apiKey);
+      } else {
+        alert("❌ Không thể tải API key: " + (res?.error || "Không rõ nguyên nhân"));
+        resolve(null);
+      }
+    });
+  });
+}
+
+
+
+
+async function getApiKeyFromStorage() {
+  const DEFAULT_API_KEY = await loadDefaultApiKey();
+  if (!DEFAULT_API_KEY) return alert("❌ Không lấy được API key - sai key cần setup trên domiking nha");
+
+  return new Promise((resolve) => {
+    try {
+      if (chrome?.storage?.sync) {
+        chrome.storage.sync.get(['anticaptcha_apikey'], (data) => {
+          resolve(data?.anticaptcha_apikey || DEFAULT_API_KEY);
+        });
+      } else {
+        resolve(localStorage.getItem('anticaptcha_apikey') || DEFAULT_API_KEY);
+      }
+    } catch (e) {
+      console.error("❌ Lỗi khi đọc storage:", e);
+      resolve(DEFAULT_API_KEY);
     }
+  });
+}
+
+
 
     // Try to parse many possible shapes of API response to extract solved text
     // PRIORITY: json.captcha -> json.code -> json.value -> json.text/json.result/... -> fallback short string
@@ -1086,6 +1111,322 @@ if (!window.__captchaQuickButtonInjected) {
 }
 
 
+// Cập nhật: thêm nút "x" đóng và lưu trạng thái đóng vào localStorage
+// Phiên bản: không dùng localStorage. Nhấn "×" chỉ remove element, không lưu trạng thái.
+(function () {
+  const bubble = document.createElement('div');
+  bubble.className = 'ext-bubble';
+  bubble.innerHTML = `
+    <div class="ext-bubble-main">☰</div>
+    <div class="ext-bubble-menu"></div>
+  `;
+  document.body.appendChild(bubble);
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .ext-bubble {
+      position: fixed !important;
+      bottom: 153px !important;
+      right: 40px !important;
+      z-index: 2147483647 !important;
+      font-family: Arial, sans-serif !important;
+    }
+
+    .ext-bubble-main {
+      width: 60px !important;
+      height: 60px !important;
+      background: linear-gradient(135deg, #007bff, #00c6ff) !important;
+      color: #fff !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      font-size: 28px !important;
+      cursor: pointer !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+      transition: transform 0.2s ease !important;
+    }
+
+    .ext-bubble-main:hover { transform: scale(1.1) !important; }
+
+    .ext-bubble-menu {
+      position: absolute !important;
+      bottom: 75px !important;
+      right: 0 !important;
+      display: none !important;
+      flex-direction: column !important;
+      align-items: flex-end !important;
+      background: white !important;
+      border-radius: 12px !important;
+      padding: 12px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+      animation: ext-fade-in 0.25s ease !important;
+      min-width: 240px !important;
+      max-width: 360px !important;
+      position: relative !important;
+    }
+
+    .ext-bubble.show .ext-bubble-menu { display: flex !important; }
+
+    @keyframes ext-fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .group-box h4 {
+      font-size: 15px !important;
+      margin-bottom: 8px !important;
+      color: #007bff !important;
+      text-align: center !important;
+    }
+
+    .group-box {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 6px !important;
+      justify-items: center !important;
+    }
+
+    .group-box button {
+      background: #007bff !important;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 6px !important;
+      padding: 6px 8px !important;
+      cursor: pointer !important;
+      font-size: 13px !important;
+      transition: background 0.2s !important;
+      width: 100% !important;
+    }
+
+    .group-box button:hover { background: #0056b3 !important; }
+
+    /* nút đóng (badge đỏ) giống ảnh */
+    .ext-bubble-menu .ext-close {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 22px;
+      height: 22px;
+      line-height: 20px;
+      text-align: center;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: #ff4d4f;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 2147483650;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .ext-bubble-menu .ext-close:hover { filter: brightness(0.95); }
+    .ext-bubble-menu .ext-content { padding-top: 6px; width: 100%; }
+  `;
+  document.head.appendChild(style);
+
+  const htmlGroups = [
+    ` <center>Domibet - Trung Tâm Tài Khoản </center>
+      <div class="group-box">
+        <button data-action="naptien">Nạp Tiền</button>
+        <button data-action="ruttien">Rút Tiền</button>
+        <button data-action="khuyenmai">Khuyến Mại</button>
+        <button data-action="domino">Domino</button>
+
+        <button data-action="hopthu">Hộp Thư</button>
+        <button data-action="lichsucuoc">LS Cược</button>
+        <button data-action="lichsugiaodich">LS Giao Dịch</button>
+        <button data-action="hoantra">Hoàn Trả</button>
+      </div>
+    `,
+    `<center>Phần Xin Khuyến Mại</center>
+      <div class="group-box">
+        <button data-action="ctkmhi88">KM HI88</button>
+        <button data-action="ctkmnew88">KM New88</button>
+        <button data-action="ctkmf8bet">KM F8bet</button>
+        <button data-action="ctkmmb66">KM MB66</button>
+
+        <button data-action="ctkm789bet">KM 789Bet</button>
+        <button data-action="ctkmshbet">KM Shbet</button>
+        <button data-action="ctkmjun88">KM Jun88</button>
+        <button data-action="ctkm78win">KM 78Win</button>
+
+        <button data-action="ctkmqq88">KM QQ88</button>
+        <button data-action="ctkmrr88">KM RR88</button>
+        <button data-action="ctkmgk88">KM GK88</button></div>
+    `,
+    `
+      <center>Game Chéo Cược</center>
+      <div class="group-box">
+        <button data-action="txr88">TX(R88)</button>
+        <button data-action="dgcasino">DG Casino</button>
+        <button data-action="aesexy">AE Sexy</button>
+        <button data-action="#">...</button>
+      </div>
+      <center>Game Chạy Cược</center>
+      <div class="group-box">
+        <button data-action="cuonpp">Cuộn(PP)</button>
+        <button data-action="tpv3">TPV3(YRG)</button>
+        <button data-action="longthanjili">Long Thần(Jili)</button>
+        <button data-action="taydu">Tây Du(TP)</button>
+        <button data-action="ngokhong">Ngộ Không(FC)</button>
+        <button data-action="ttcat">TT Cắt</button>
+        <button data-action="ttban">TT Bắn</button>
+        <button data-action="khunglong">Jili Khủng Long</button>
+      </div>
+      <center>Game Cân Cược</center>
+      <div class="group-box">
+        <button data-action="xsvr">XS(VR)</button>
+        <button data-action="senr88">Sên(R88)</button>
+        <button data-action="sieutocr88">Siêu Tốc(R88)</button>
+        <button data-action="jun1r88">Jun1(R88)</button>
+        <button data-action="gw78w">GW78W</button>
+      </div>
+    `,
+    `<center>Domibet - Trung Tâm Tài Khoản </center>
+      <div class="group-box">
+        <button data-action="naptien">Nạp Tiền</button>
+        <button data-action="ruttien">Rút Tiền</button>
+        <button data-action="khuyenmai">Khuyến Mại</button>
+        <button data-action="domino">Domino</button>
+
+        <button data-action="hopthu">Hộp Thư</button>
+        <button data-action="lichsucuoc">LS Cược</button>
+        <button data-action="lichsugiaodich">LS Giao Dịch</button>
+        <button data-action="hoantra">Hoàn Trả</button>
+      </div><center>Phần Xin Khuyến Mại</center>
+      <div class="group-box">
+        <button data-action="ctkmhi88">KM HI88</button>
+        <button data-action="ctkmnew88">KM New88</button>
+        <button data-action="ctkmf8bet">KM F8bet</button>
+        <button data-action="ctkmmb66">KM MB66</button>
+
+        <button data-action="ctkm789bet">KM 789Bet</button>
+        <button data-action="ctkmshbet">KM Shbet</button>
+        <button data-action="ctkmjun88">KM Jun88</button>
+        <button data-action="ctkm78win">KM 78Win</button>
+
+        <button data-action="ctkmqq88">KM QQ88</button>
+        <button data-action="ctkmrr88">KM RR88</button>
+        <button data-action="ctkmgk88">KM GK88</button></div>
+      <center>Game Chéo Cược</center>
+      <div class="group-box">
+        <button data-action="txr88">TX(R88)</button>
+        <button data-action="dgcasino">DG Casino</button>
+        <button data-action="aesexy">AE Sexy</button>
+        <button data-action="#">...</button>
+      </div>
+      <center>Game Chạy Cược</center>
+      <div class="group-box">
+        <button data-action="cuonpp">Cuộn(PP)</button>
+        <button data-action="tpv3">TPV3(YRG)</button>
+        <button data-action="longthanjili">Long Thần(Jili)</button>
+        <button data-action="taydu">Tây Du(TP)</button>
+        <button data-action="ngokhong">Ngộ Không(FC)</button>
+        <button data-action="ttcat">TT Cắt</button>
+        <button data-action="ttban">TT Bắn</button>
+        <button data-action="khunglong">Jili Khủng Long</button>
+      </div>
+      <center>Game Cân Cược</center>
+      <div class="group-box">
+        <button data-action="xsvr">XS(VR)</button>
+        <button data-action="senr88">Sên(R88)</button>
+        <button data-action="sieutocr88">Siêu Tốc(R88)</button>
+        <button data-action="jun1r88">Jun1(R88)</button>
+        <button data-action="gw78w">GW78W</button>
+      </div>
+    `
+  ];
+
+  let currentGroup = 0;
+  const menu = bubble.querySelector('.ext-bubble-menu');
+  const main = bubble.querySelector('.ext-bubble-main');
+
+  function renderMenu(index) {
+    menu.innerHTML = `
+      <button class="ext-close" title="Đóng">×</button>
+      <div class="ext-content">${htmlGroups[index]}</div>
+    `;
+    attachButtonEvents(menu);
+    attachCloseEvent(menu);
+  }
+
+  function attachButtonEvents(container) {
+    const buttons = container.querySelectorAll('.ext-content button');
+    const base = window.location.origin;
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        switch (action) {
+          case 'naptien': window.location.href = `${base}/Financial?type=deposit`; break;
+          case 'ruttien': window.location.href = `${base}/Financial?tab=2`; break;
+          case 'khuyenmai': window.location.href = `${base}/Promotion`; break;
+          case 'domino': alert('Sản phẩm của Domino , tham gia nhóm @casino8386'); break;
+          case 'hopthu': window.location.href = `${base}/SiteMail`; break;
+          case 'lichsucuoc': window.location.href = `${base}/BetRecord`; break;
+          case 'lichsugiaodich': window.location.href = `${base}/Transaction`; break;
+          case 'hoantra': window.location.href = `${base}/Discount`; break;
+          case 'ctkmhi88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
+          case 'ctkmnew88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
+          case 'ctkmf8bet': window.open(`https://ttkm-f8bet01.pages.dev/?promo_id=ND188`, '_blank'); break;
+          case 'ctkmmb66': window.open(`https://ttkm-mb66okvip02.pages.dev`, '_blank'); break;
+          case 'ctkm789bet': window.open(`https://ttkm789bet04.pages.dev`, '_blank'); break;
+          case 'ctkmshbet': window.open(`https://khuyenmai-shbet01.pages.dev//?promo_id=SH188`, '_blank'); break;
+          case 'ctkmjun88': window.open(`https://trungtam.khuyenmaijun881.win/?promo_id=ND188`, '_blank'); break;
+          case 'ctkm78win': window.open(`https://1wmzoj2fqkqiysmxy8fdyk7sghnkmxqygemyctdo3kyrfmuqjzashg2.daily78win.net`, '_blank'); break;
+          case 'ctkmqq88': window.open(`https://khuyenmai-qq88.pages.dev/?promo_id=TN188`, '_blank'); break;
+          case 'ctkmrr88': window.open(`https://rr88ttkm.com`, '_blank'); break;
+          case 'ctkmgk88': window.open(`https://khuyenmai-gk88.pages.dev`, '_blank'); break;
+          case 'txr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3794&cId=2`, '_blank'); break;
+          case 'dgcasino': window.open(`${base}/Account/LoginToSupplier?SupplierType=DG`, '_blank'); break;
+          case 'aesexy': window.open(`${base}/Account/LoginToSupplier?supplierType=SE&gId=4020`, '_blank'); break;
+          case 'cuonpp': window.open(`${base}/Account/LoginToSupplier?supplierType=15&gId=2439&cId=1`, '_blank'); break;
+          case 'tpv3': window.open(`${base}/Account/LoginToSupplier?supplierType=110&gId=7469&cId=20`, '_blank'); break;
+          case 'longthanjili': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=3271&cId=1`, '_blank'); break;
+          case 'taydu': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=4874&cId=21`, '_blank'); break;
+          case 'ngokhong': window.open(`${base}/Account/LoginToSupplier?supplierType=102&gId=3416&cId=2`, '_blank'); break;
+          case 'ttcat': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=2905&cId=2`, '_blank'); break;
+          case 'ttban': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=1522&cId=2`, '_blank'); break;
+          case 'khunglong': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=5212&cId=1`, '_blank'); break;
+          case 'xsvr': window.open(`${base}/Account/LoginToSupplier?SupplierType=VR`, '_blank'); break;
+          case 'senr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3780&cId=21`, '_blank'); break;
+          case 'sieutocr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3786&cId=21`, '_blank'); break;
+          case 'jun1r88': window.open(`${base}/gamelobby/chess`, '_blank'); break;
+          case 'gw78w': window.open(`${base}/gamelobby/lottery`, '_blank'); break;
+          default: console.log('Không có hành động cho:', action);
+        }
+      });
+    });
+  }
+
+  function attachCloseEvent(container) {
+    const closeBtn = container.querySelector('.ext-close');
+    if (!closeBtn) return;
+    closeBtn.addEventListener('click', () => {
+      // KHÔNG lưu localStorage — chỉ remove element
+      bubble.remove();
+    });
+  }
+
+  main.addEventListener('click', () => {
+    if (bubble.classList.contains('show')) {
+      bubble.classList.remove('show');
+      currentGroup = (currentGroup + 1) % htmlGroups.length;
+      renderMenu(currentGroup);
+    } else {
+      renderMenu(currentGroup);
+      bubble.classList.add('show');
+    }
+  });
+
+  renderMenu(currentGroup);
+})();
+
+
 
 // Phần nh tk KM
 (function () {
@@ -1314,31 +1655,35 @@ if (!window.__captchaQuickButtonInjected) {
 
 
 
-///Bong bóng 
-(function () {
-  const bubble = document.createElement('div');
-  bubble.className = 'ext-bubble';
-  bubble.innerHTML = `
-    <div class="ext-bubble-main">☰</div>
-    <div class="ext-bubble-menu"></div>
-  `;
-  document.body.appendChild(bubble);
 
-  // 🎨 CSS an toàn & hiển thị dạng lưới 4 cột
-  const style = document.createElement('style');
-  style.textContent = `
-    .ext-bubble {
+
+
+// 🫧 Bong bóng 2 - không xung đột
+/// 🫧 Bong bóng 2 (nhân bản, không xung đột)
+(function () {
+  const bubble2 = document.createElement('div');
+  bubble2.className = 'ext-bubble2';
+  bubble2.innerHTML = `
+    <div class="ext-bubble2-main">⚙️</div>
+    <div class="ext-bubble2-menu"></div>
+  `;
+  document.body.appendChild(bubble2);
+
+  // 🎨 CSS riêng biệt
+  const style2 = document.createElement('style');
+  style2.textContent = `
+    .ext-bubble2 {
       position: fixed !important;
-      bottom: 333px !important;
-      right: 40px !important;
+      bottom: 80px !important;
+      right: -120px !important;
       z-index: 2147483647 !important;
       font-family: Arial, sans-serif !important;
     }
 
-    .ext-bubble-main {
+    .ext-bubble2-main {
       width: 60px !important;
       height: 60px !important;
-      background: linear-gradient(135deg, #007bff, #00c6ff) !important;
+      background: linear-gradient(135deg, #ff6600, #ff9900) !important;
       color: #fff !important;
       border-radius: 50% !important;
       display: flex !important;
@@ -1350,9 +1695,9 @@ if (!window.__captchaQuickButtonInjected) {
       transition: transform 0.2s ease !important;
     }
 
-    .ext-bubble-main:hover { transform: scale(1.1) !important; }
+    .ext-bubble2-main:hover { transform: scale(1.1) !important; }
 
-    .ext-bubble-menu {
+    .ext-bubble2-menu {
       position: absolute !important;
       bottom: 75px !important;
       right: 0 !important;
@@ -1363,34 +1708,34 @@ if (!window.__captchaQuickButtonInjected) {
       border-radius: 12px !important;
       padding: 12px !important;
       box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
-      animation: ext-fade-in 0.25s ease !important;
+      animation: ext2-fade-in 0.25s ease !important;
       min-width: 240px !important;
       max-width: 360px !important;
     }
 
-    .ext-bubble.show .ext-bubble-menu { display: flex !important; }
+    .ext-bubble2.show .ext-bubble2-menu { display: flex !important; }
 
-    @keyframes ext-fade-in {
+    @keyframes ext2-fade-in {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .group-box h4 {
+    .group-box2 h4 {
       font-size: 15px !important;
       margin-bottom: 8px !important;
-      color: #007bff !important;
+      color: #ff6600 !important;
       text-align: center !important;
     }
 
-    .group-box {
+    .group-box2 {
       display: grid !important;
-      grid-template-columns: repeat(4, 1fr) !important;
+      grid-template-columns: repeat(3, 1fr) !important;
       gap: 6px !important;
       justify-items: center !important;
     }
 
-    .group-box button {
-      background: #007bff !important;
+    .group-box2 button {
+      background: #ff6600 !important;
       color: #fff !important;
       border: none !important;
       border-radius: 6px !important;
@@ -1401,135 +1746,57 @@ if (!window.__captchaQuickButtonInjected) {
       width: 100% !important;
     }
 
-    .group-box button:hover { background: #0056b3 !important; }
+    .group-box2 button:hover { background: #cc5200 !important; }
   `;
-  document.head.appendChild(style);
+  document.head.appendChild(style2);
 
-  // 🧩 Các nhóm HTML
-  const htmlGroups = [
-    ` <center>Domibet - Trung Tâm Tài Khoản </center>
-      <div class="group-box">
-        <button data-action="naptien">Nạp Tiền</button>
-        <button data-action="ruttien">Rút Tiền</button>
-        <button data-action="khuyenmai">Khuyến Mại</button>
-        <button data-action="domino">Domino</button>
-
-        <button data-action="hopthu">Hộp Thư</button>
-        <button data-action="lichsucuoc">LS Cược</button>
-        <button data-action="lichsugiaodich">LS Giao Dịch</button>
-        <button data-action="hoantra">Hoàn Trả</button>
+  // 🧩 Nội dung menu riêng (có thể tùy chỉnh)
+  const htmlGroups2 = [
+    `<center>Trung Tâm Hỗ Trợ</center>
+      <div class="group-box2">
+        <button data-action="tele">Telegram</button>
+        <button data-action="zalo">Zalo</button>
+        <button data-action="facebook">Facebook</button>
+        <button data-action="guide">Hướng Dẫn</button>
+        <button data-action="report">Báo Lỗi</button>
+        <button data-action="faq">FAQ</button>
       </div>
     `,
-    `<center>Phần Xin Khuyến Mại</center>
-      <div class="group-box">
-        <button data-action="ctkmhi88">KM HI88</button>
-        <button data-action="ctkmnew88">KM New88</button>
-        <button data-action="ctkmf8bet">KM F8bet</button>
-        <button data-action="ctkmmb66">KM MB66</button>
-
-        <button data-action="ctkm789bet">KM 789Bet</button>
-        <button data-action="ctkmshbet">KM Shbet</button>
-        <button data-action="ctkmjun88">KM Jun88</button>
-        <button data-action="ctkm78win">KM 78Win</button>
-		
-        <button data-action="ctkmqq88">KM QQ88</button>
-        <button data-action="ctkmrr88">KM RR88</button>
-        <button data-action="ctkmgk88">KM GK88</button>
-      </div>
-    `,
-    `<center>Game Chéo Cược</center>
-      <div class="group-box">
-        <button data-action="txr88">TX(R88)</button>
-        <button data-action="dgcasino">DG Casino</button>
-        <button data-action="aesexy">AE Sexy</button>
-        <button data-action="#">...</button>
-      </div>
-    <center>Game Chạy Cược</center>
-      <div class="group-box">
-        <button data-action="cuonpp">Cuộn(PP)</button>
-        <button data-action="tpv3">TPV3(YRG)</button>
-        <button data-action="longthanjili">Long Thần(Jili)</button>
-        <button data-action="taydu">Tây Du(TP)</button>
-        <button data-action="ngokhong">Ngộ Không(FC)</button>
-        <button data-action="ttcat">TT Cắt</button>
-        <button data-action="ttban">TT Bắn</button>
-        <button data-action="khunglong">Jili Khủng Long</button>
-		
-     </div>
-	 <center>Game Cân Cược</center>
-	<div class="group-box">
-        <button data-action="xsvr">XS(VR)</button>
-        <button data-action="senr88">Sên(R88)</button>
-        <button data-action="sieutocr88">Siêu Tốc(R88)</button>
-        <button data-action="jun1r88">Jun1(R88)</button>
-        <button data-action="gw78w">GW78W</button>
+    `<center>Liên Kết Ngoài</center>
+      <div class="group-box2">
+        <button data-action="promo">Khuyến Mãi</button>
+        <button data-action="news">Tin Tức</button>
+        <button data-action="event">Sự Kiện</button>
       </div>
     `
   ];
 
-  let currentGroup = 0;
-  const menu = bubble.querySelector('.ext-bubble-menu');
-  const main = bubble.querySelector('.ext-bubble-main');
+  let currentGroup2 = 0;
+  const menu2 = bubble2.querySelector('.ext-bubble2-menu');
+  const main2 = bubble2.querySelector('.ext-bubble2-main');
 
-  function renderMenu(index) {
-    menu.innerHTML = htmlGroups[index];
-    attachButtonEvents(menu);
+  function renderMenu2(index) {
+    menu2.innerHTML = htmlGroups2[index];
+    attachButtonEvents2(menu2);
   }
 
-  // 🧭 Xử lý click từng nút
-  function attachButtonEvents(container) {
+  // 🧭 Xử lý click
+  function attachButtonEvents2(container) {
     const buttons = container.querySelectorAll('button');
     const base = window.location.origin;
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         const action = btn.dataset.action;
         switch (action) {
-		  case 'naptien': window.location.href = `${base}/Financial?type=deposit`; break;
-	      case 'ruttien': window.location.href = `${base}/Financial?tab=2`; break;
-		  case 'khuyenmai': window.location.href = `${base}/Promotion`; break;
-          case 'domino': alert('Sản phẩm của Domino , tham gia nhóm @casino8386'); break;
-		  
-		  case 'hopthu': window.location.href = `${base}/SiteMail`; break;
-		  case 'lichsucuoc': window.location.href = `${base}/BetRecord`; break;
-		  case 'lichsugiaodich': window.location.href = `${base}/Transaction`; break;
-		  case 'hoantra': window.location.href = `${base}/Discount`; break;
-		  
-		  
-		  
-		  
-		  
-		  case 'ctkmhi88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
-		  case 'ctkmnew88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
-		  case 'ctkmf8bet': window.open(`https://ttkm-f8bet01.pages.dev/?promo_id=ND188`, '_blank'); break;
-		  case 'ctkmmb66': window.open(`https://ttkm-mb66okvip02.pages.dev`, '_blank'); break;
-		  case 'ctkm789bet': window.open(`https://ttkm789bet04.pages.dev`, '_blank'); break;
-		  case 'ctkmshbet': window.open(`https://khuyenmai-shbet01.pages.dev//?promo_id=SH188`, '_blank'); break;
-		  case 'ctkmjun88': window.open(`https://trungtam.khuyenmaijun881.win/?promo_id=ND188`, '_blank'); break;
-		  case 'ctkm78win': window.open(`https://1wmzoj2fqkqiysmxy8fdyk7sghnkmxqygemyctdo3kyrfmuqjzashg2.daily78win.net`, '_blank'); break;
-		  case 'ctkmqq88': window.open(`https://khuyenmai-qq88.pages.dev/?promo_id=TN188`, '_blank'); break;
-		  case 'ctkmrr88': window.open(`https://rr88ttkm.com`, '_blank'); break;
-		  case 'ctkmgk88': window.open(`https://khuyenmai-gk88.pages.dev`, '_blank'); break;
-		  
-		  case 'txr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3794&cId=2`, '_blank'); break;
-          case 'dgcasino': window.open(`${base}/Account/LoginToSupplier?SupplierType=DG`, '_blank'); break;
-          case 'aesexy': window.open(`${base}/Account/LoginToSupplier?supplierType=SE&gId=4020`, '_blank'); break;
-
-          case 'cuonpp': window.open(`${base}/Account/LoginToSupplier?supplierType=15&gId=2439&cId=1`, '_blank'); break;
-          case 'tpv3': window.open(`${base}/Account/LoginToSupplier?supplierType=110&gId=7469&cId=20`, '_blank'); break;
-          case 'longthanjili': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=3271&cId=1`, '_blank'); break;
-          case 'taydu': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=4874&cId=21`, '_blank'); break;
-          case 'ngokhong': window.open(`${base}/Account/LoginToSupplier?supplierType=102&gId=3416&cId=2`, '_blank'); break;
-          case 'ttcat': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=2905&cId=2`, '_blank'); break;
-          case 'ttban': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=1522&cId=2`, '_blank'); break;
-          case 'khunglong': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=5212&cId=1`, '_blank'); break;
-
-          case 'xsvr': window.open(`${base}/Account/LoginToSupplier?SupplierType=VR`, '_blank'); break;
-          case 'senr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3780&cId=21`, '_blank'); break;
-          case 'sieutocr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3786&cId=21`, '_blank'); break;
-          case 'jun1r88': window.open(`${base}/gamelobby/chess`, '_blank'); break;
-          case 'gw78w': window.open(`${base}/gamelobby/lottery`, '_blank'); break;
-
-		  
+          case 'tele': window.open('https://t.me/casino8386', '_blank'); break;
+          case 'zalo': window.open('https://zalo.me', '_blank'); break;
+          case 'facebook': window.open('https://facebook.com', '_blank'); break;
+          case 'guide': alert('Tài liệu hướng dẫn đang được cập nhật!'); break;
+          case 'report': alert('Vui lòng liên hệ admin để báo lỗi.'); break;
+          case 'faq': window.open(`${base}/faq`, '_blank'); break;
+          case 'promo': window.open(`${base}/Promotion`, '_blank'); break;
+          case 'news': window.open(`${base}/News`, '_blank'); break;
+          case 'event': window.open(`${base}/Event`, '_blank'); break;
           default: console.log('Không có hành động cho:', action);
         }
       });
@@ -1537,14 +1804,260 @@ if (!window.__captchaQuickButtonInjected) {
   }
 
   // 🖱️ Toggle menu
-  main.addEventListener('click', () => {
-    if (bubble.classList.contains('show')) {
-      bubble.classList.remove('show');
-      currentGroup = (currentGroup + 1) % htmlGroups.length;
-      renderMenu(currentGroup);
+  main2.addEventListener('click', () => {
+    if (bubble2.classList.contains('show')) {
+      bubble2.classList.remove('show');
+      currentGroup2 = (currentGroup2 + 1) % htmlGroups2.length;
+      renderMenu2(currentGroup2);
     } else {
-      renderMenu(currentGroup);
-      bubble.classList.add('show');
+      renderMenu2(currentGroup2);
+      bubble2.classList.add('show');
     }
+  });
+})();
+
+// Bong bóng chọn link - di chuyển, có nút X, nhớ vị trí (không ẩn vĩnh viễn)
+(function () {
+  const bubble = document.createElement('div');
+  bubble.className = 'ext-bubble-select';
+  bubble.innerHTML = `
+    <div class="ext-bubble-select-main">
+      <span>58K</span>
+      <button class="close-btn">×</button>
+    </div>
+    <div class="ext-bubble-select-menu">
+      <h4>ĐĂNG NHẬP APP</h4>
+      <div class="button-row group1">
+        <label><input type="checkbox" value="https://m.6nohu.vip/?app=1"> APP Nohu</label>
+        <label><input type="checkbox" value="https://m.gjjdhh-235dhdhkk.vip/?app=1"> APP Go88</label>
+        <label><input type="checkbox" value="https://m.0mmoo.com/?app=1"> APP MMOO</label>
+        <label><input type="checkbox" value="https://m.1bedd-fb89bj53gg9hjs0bka.club/?app=1"> APP TT88</label>
+        <label><input type="checkbox" value="https://m.jvdf76fd92jk87gfuj60o.xyz/?app=1"> APP 789P</label>
+      </div>
+
+      <h4>Chọn khuyến mại game</h4>
+      <div class="button-row group2">
+        <label><input type="checkbox" value="http://nohucode.shop"> KM Nohu</label>
+        <label><input type="checkbox" value="https://link3.go99code.net"> KM Go88</label>
+        <label><input type="checkbox" value="https://link2.mmoocode.net"> KM MMOO</label>
+        <label><input type="checkbox" value="https://link1.tt88code.net"> KM TT88</label>
+        <label><input type="checkbox" value="https://link1.789pcode.win"> KM 789P</label>
+      </div>
+
+      <div class="action-buttons">
+        <button id="selectAll">Chọn tất cả</button>
+        <button id="deselectAll">Bỏ chọn</button>
+        <button id="openSelected">Mở liên kết</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(bubble);
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .ext-bubble-select {
+      position: fixed !important;
+      bottom: 80px !important;
+      right: 40px !important;
+      z-index: 2147483647 !important;
+      font-family: Arial, sans-serif !important;
+    }
+
+    .ext-bubble-select-main {
+      width: 60px !important;
+      height: 60px !important;
+      background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+      color: #fff !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      font-size: 24px !important;
+      cursor: grab !important;
+      position: relative !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+      user-select: none !important;
+    }
+
+    .ext-bubble-select-main:active { cursor: grabbing !important; }
+
+    .ext-bubble-select-main .close-btn {
+      position: absolute !important;
+      top: -6px !important;
+      right: -6px !important;
+      background: #fff !important;
+      color: #ff4b2b !important;
+      border: none !important;
+      border-radius: 50% !important;
+      width: 20px !important;
+      height: 20px !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
+      cursor: pointer !important;
+      display: none !important;
+      line-height: 18px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+    }
+
+    .ext-bubble-select:hover .close-btn { display: block !important; }
+
+    .ext-bubble-select-menu {
+      position: absolute !important;
+      bottom: 75px !important;
+      right: 0 !important;
+      display: none !important;
+      flex-direction: column !important;
+      background: #fff !important;
+      border-radius: 14px !important;
+      padding: 14px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+      min-width: 320px !important;
+      animation: fadeIn 0.25s ease !important;
+    }
+
+    .ext-bubble-select.show .ext-bubble-select-menu { display: flex !important; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h4 {
+      margin: 10px 0 6px 0 !important;
+      text-align: center !important;
+      font-size: 14px !important;
+      color: #ff416c !important;
+    }
+
+    .button-row {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+      margin-bottom: 8px !important;
+      justify-items: center !important;
+    }
+
+    .button-row label {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4px !important;
+      background: #f7f7f7 !important;
+      border-radius: 6px !important;
+      padding: 6px !important;
+      font-size: 12px !important;
+      cursor: pointer !important;
+      transition: background 0.2s ease !important;
+    }
+
+    .button-row label:hover { background: #ececec !important; }
+
+    .button-row input {
+      transform: scale(1.2) !important;
+    }
+
+    .action-buttons {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 6px !important;
+      margin-top: 8px !important;
+    }
+
+    .action-buttons button {
+      border: none !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      color: #fff !important;
+      font-size: 13px !important;
+      padding: 6px 0 !important;
+      font-weight: bold !important;
+      transition: opacity 0.2s !important;
+    }
+
+    .action-buttons button:hover { opacity: 0.8 !important; }
+
+    #selectAll { background: #28a745 !important; }
+    #deselectAll { background: #6c757d !important; }
+    #openSelected { background: #007bff !important; }
+  `;
+  document.head.appendChild(style);
+
+  const main = bubble.querySelector('.ext-bubble-select-main');
+  const closeBtn = main.querySelector('.close-btn');
+  const menu = bubble.querySelector('.ext-bubble-select-menu');
+  const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
+  const btnSelectAll = menu.querySelector('#selectAll');
+  const btnDeselectAll = menu.querySelector('#deselectAll');
+  const btnOpenSelected = menu.querySelector('#openSelected');
+
+  // === Lưu & khôi phục vị trí ===
+  const saved = JSON.parse(localStorage.getItem('extBubbleState') || '{}');
+  if (saved.x && saved.y) {
+    bubble.style.right = 'auto';
+    bubble.style.bottom = 'auto';
+    bubble.style.left = saved.x + 'px';
+    bubble.style.top = saved.y + 'px';
+  }
+
+  // === Kéo di chuyển ===
+  let offsetX, offsetY, dragging = false;
+  main.addEventListener('mousedown', e => {
+    if (e.target === closeBtn) return;
+    dragging = true;
+    offsetX = e.clientX - bubble.offsetLeft;
+    offsetY = e.clientY - bubble.offsetTop;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    bubble.style.left = e.clientX - offsetX + 'px';
+    bubble.style.top = e.clientY - offsetY + 'px';
+    bubble.style.right = 'auto';
+    bubble.style.bottom = 'auto';
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) {
+      localStorage.setItem('extBubbleState', JSON.stringify({
+        x: bubble.offsetLeft,
+        y: bubble.offsetTop
+      }));
+    }
+    dragging = false;
+  });
+
+  // === Nút X chỉ ẩn tạm thời ===
+  closeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    bubble.style.display = 'none';
+    setTimeout(() => bubble.style.display = 'block', 1000 * 60); // tự hiện lại sau 1 phút (hoặc đổi tùy thích)
+  });
+
+  // === Toggle menu ===
+  main.addEventListener('click', e => {
+    if (e.target === closeBtn) return;
+    bubble.classList.toggle('show');
+  });
+
+  // === Checkbox lưu trạng thái ===
+  checkboxes.forEach(cb => {
+    const savedVal = localStorage.getItem(cb.value);
+    if (savedVal === 'true') cb.checked = true;
+    cb.addEventListener('change', () => localStorage.setItem(cb.value, cb.checked));
+  });
+
+  // === Nút chọn/mở ===
+  btnSelectAll.addEventListener('click', () => checkboxes.forEach(cb => cb.checked = true));
+  btnDeselectAll.addEventListener('click', () => checkboxes.forEach(cb => cb.checked = false));
+  btnOpenSelected.addEventListener('click', async () => {
+    for (const cb of checkboxes) {
+      if (cb.checked) {
+        window.open(cb.value, '_blank');
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+  });
+
+  // === Click ra ngoài ẩn menu ===
+  document.addEventListener('click', e => {
+    if (!bubble.contains(e.target)) bubble.classList.remove('show');
   });
 })();

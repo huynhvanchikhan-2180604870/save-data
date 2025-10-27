@@ -1,5 +1,7 @@
 // background.js - Improved Version
 let APIKEY_CAPCHA = "ec53477299cfbbf89cd4bb66d21de723";
+let USERNAME_TEAM = "";
+let API_BASE = "https://save-data-tau.vercel.app/api/links";
 // Load configuration
 let config = {};
 async function loadConfig() {
@@ -135,10 +137,24 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     // Fetch and parse site list in background and return results to caller
     (async () => {
       try {
-        const response = await fetch(
-          chrome.runtime.getURL("websites-list.json")
+        const res = await fetch(
+          `${API_BASE}/${encodeURIComponent(USERNAME_TEAM)}`,
+          {
+            method: "GET",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" },
+          }
         );
-        const results = await response.json();
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP ${res.status} - ${text}`);
+        }
+        const json = await res.json();
+        const results = (json.data || []).map(({ name, link }) => ({
+          name,
+          link,
+        }));
 
         sendResponse({
           success: true,
@@ -1038,8 +1054,6 @@ async function solveCaptchaCommon(tabId) {
   if (!config.automation.solveCaptchaEnabled) return;
 
   try {
-    
-
     toast(`Bắt đầu giải captcha 1. Vui lòng chờ...`);
 
     const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
@@ -2020,3 +2034,37 @@ chrome.webRequest.onAuthRequired.addListener(
   { urls: ["<all_urls>"] },
   ["asyncBlocking"]
 );
+
+// --- Hàm thông báo đơn giản ---
+function showNotification(message, type = "info") {
+  const icon = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
+  console.log(`${icon} ${message}`);
+}
+
+// --- Nhận yêu cầu lấy API key từ content script ---
+chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
+  if (req.action === "getApiKey") {
+    (async () => {
+      try {
+        const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
+
+        if (!apiKey) {
+          showNotification("❌ JSON không chứa API key", "error");
+          sendResponse({ success: false, error: "Không có apikey trong JSON" });
+          return;
+        }
+
+        showNotification(`✅ API key tải thành công: ${apiKey}`, "success");
+        sendResponse({ success: true, apiKey });
+      } catch (err) {
+        console.error("❌ Lỗi khi tải DEFAULT_API_KEY:", err);
+        sendResponse({
+          success: false,
+          error: err.message || "Lỗi không xác định",
+        });
+      }
+    })();
+
+    return true; // Giữ sendResponse hoạt động cho async
+  }
+});
