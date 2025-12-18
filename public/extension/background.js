@@ -1064,8 +1064,8 @@ async function solveCaptchaCommon(tabId) {
 
     await chrome.scripting.executeScript({
       target: { tabId: tabId },
-      args: [apikey, config.timeouts.captchaSolve],
-      func: async (apikey, timeout) => {
+      args: [APIKEY_CAPCHA, config.timeouts.captchaSolve],
+      func: async (APIKEY_CAPCHA, timeout) => {
         const solveCaptcha = async (base64) => {
           try {
             const response = await fetch(
@@ -1076,7 +1076,7 @@ async function solveCaptchaCommon(tabId) {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  apikey: apikey,
+                  apikey: APIKEY_CAPCHA,
                   type: 14,
                   img: base64,
                 }),
@@ -1176,8 +1176,8 @@ async function solveCaptchaForR88(tabId) {
 
     await chrome.scripting.executeScript({
       target: { tabId: tabId },
-      args: [apikey, config.timeouts.captchaSolve],
-      func: async (apikey, timeout) => {
+      args: [APIKEY_CAPCHA, config.timeouts.captchaSolve],
+      func: async (APIKEY_CAPCHA, timeout) => {
         const solveCaptcha = async (base64) => {
           try {
             const response = await fetch(
@@ -1188,7 +1188,7 @@ async function solveCaptchaForR88(tabId) {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  apikey: apikey,
+                  apikey: APIKEY_CAPCHA,
                   type: 14,
                   img: base64,
                 }),

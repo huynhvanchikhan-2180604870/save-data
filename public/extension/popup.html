@@ -1,129 +1,118 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Domino</title>
-    <link rel="stylesheet" href="popup.css" />
 
-  </head>
-  <body>
-    <div class="wrap">
-      <div
-        style="
+<head>
+  <meta charset="UTF-8" />
+  <title>nextgen</title>
+  <link rel="stylesheet" href="popup.css" />
+
+</head>
+
+<body>
+  <div class="wrap">
+    <div style="
           display: flex;
           align-items: center;
           justify-content: space-between;
           margin-bottom: 8px;
-        "
-      >
-        <h2 style="margin: 0; color:red;"> <a href="/index.html" target="_blank" style="text-decoration: none; color: blue;">DomiBet V1.2.999 </a></h2>
-        <button
-          id="toggleModeBtn"
-          title="Chuyển Light/Dark mode"
-          style="
+        ">
+      <h2 style="margin: 0; color:red;"> <a href="/index.html" target="_blank"
+          style="text-decoration: none; color: blue;">nextgen V1.2.999 </a></h2>
+      <button id="toggleModeBtn" title="Chuyển Light/Dark mode" style="
             font-size: 18px;
             padding: 6px 14px;
             border-radius: 8px;
             border: none;
             cursor: pointer;
-          "
-        >
-          🌙
-        </button>
-      </div>
-      <!-- Tab bar -->
-      <div class="tab-bar"><center>
+          ">
+        🌙
+      </button>
+    </div>
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <center>
         <button class="tab-btn active" data-tab="tab-form">Khởi Động</button>
         <button class="tab-btn" data-tab="tab-config">Tạo Data</button>
-		 <button class="tab-btn" data-tab="tab-linhtinh">All/Cược</button> 
-		 <button class="tab-btn" data-tab="tab-import">Proxy/Tiện Ích</button>
+        <button class="tab-btn" data-tab="tab-linhtinh">All/Cược</button>
+        <button class="tab-btn" data-tab="tab-import">Proxy/Tiện Ích</button>
         <!-- <button class="tab-btn" data-tab="tab-import">Nhập/Xuất</button> -->
-		</center>
-      </div>
+      </center>
+    </div>
 
-      <!-- Tab: Run -->
-      <div class="tab-content tab-form active my-2">
-        <div class="row" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-          <!-- <label>Miền hiện tại:</label> -->
-          <span id="domain" class="badge" style="font-size: 11px;">...</span>
-          <span id="result_sequence" class="badge" style="background-color: green; font-size: 11px;">...</span>
+    <!-- Tab: Run -->
+    <div class="tab-content tab-form active my-2">
+      <div class="row" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- <label>Miền hiện tại:</label> -->
+        <span id="domain" class="badge" style="font-size: 11px;">...</span>
+        <span id="result_sequence" class="badge" style="background-color: green; font-size: 11px;">...</span>
+      </div>
+      <!-- Progress Bar -->
+      <div id="progress-container" class="progress-container" style="display: none; margin: 10px 0;">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
         </div>
-        <!-- Progress Bar -->
-        <div id="progress-container" class="progress-container" style="display: none; margin: 10px 0;">
-          <div class="progress-bar">
-            <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
-          </div>
-          <div id="progress-text" class="progress-text">0/0</div>
-          <div id="progress-step" class="progress-step">Initializing...</div>
+        <div id="progress-text" class="progress-text">0/0</div>
+        <div id="progress-step" class="progress-step">Initializing...</div>
+      </div>
+      <div class="row">
+        <!-- <label>Chuỗi dữ liệu (dùng dấu <code>|</code>):</label> -->
+        <textarea id="bulkInput" style="min-height: 72px"
+          placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua tele @nextgen---"></textarea>
+        <div class="btn-group-secondary">
+          <button type="button" id="pasteData">📝 Dán</button>
+          <button type="button" id="saveData">💾 Lưu dữ liệu</button>
+          <button type="button" id="downloadBulkBtn">⬇️ Tải (.txt)</button>
+          <b style="color: aqua;">Nếu bạn đủ thông minh , hãy ấn nút Tải (.txt)</b>
         </div>
-        <div class="row">
-          <!-- <label>Chuỗi dữ liệu (dùng dấu <code>|</code>):</label> -->
-          <textarea
-            id="bulkInput"
-            style="min-height: 72px"
-            placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua tele @domitron---"
-          ></textarea>
-          <div class="btn-group-secondary">
-            <button type="button" id="pasteData">📝 Dán</button>
-            <button type="button" id="saveData">💾 Lưu dữ liệu</button>
-            <button type="button" id="downloadBulkBtn">⬇️ Tải (.txt)</button>
-			<b style="color: aqua;">Nếu bạn đủ thông minh , hãy ấn nút Tải (.txt)</b>
-          </div>
-        </div>
-        <div class="btn-group-primary" style="justify-content: space-evenly;">
-          <!--<button type="button" id="applyBulk" class="primary">
+      </div>
+      <div class="btn-group-primary" style="justify-content: space-evenly;">
+        <!--<button type="button" id="applyBulk" class="primary">
             🚀 Nhập Data
           </button>-->
-		  <button type="button" id="input_login" class="primary">
-            🚀 Nhập Login
-          </button>
-          <button type="button" id="solveCaptcha" class="primary">
-            🔐 Giải Captcha
-          </button>
-          <button type="button" id="submitForm" class="primary">
-            ✅️ Submit Form
-          </button>
-     <!-- nút gộp -->
-  <button type="button" id="quickLogin" class="primary">
-    ⚡ Đăng nhập nhanh
-  </button>
-        </div>
-        <div class="btn-group-primary" style="overflow: hidden;/* overflow-x: scroll; */justify-content: space-evenly;">
-          <button type="button" id="link_nap" class="secondary" style="font-size: 10px;">Link Nạp</button>
-          <button type="button" id="link_rut" class="primary" style="font-size: 10px;">Link Rút</button>
-          <button type="button" id="input_pass_rut" class="" style="font-size: 10px;">Nhập pass rút</button>
-          <button type="button" id="close_ads" class="" style="font-size: 10px;">Đóng QC</button>
-          <button type="button" id="add_bank_account" class="" style="font-size: 10px;">Thêm ngân hàng</button>
-        </div>
- 
-         <button type="button" id="stopAutomation" class="secondary" style="background:#e74c3c;color:#fff;border:none;padding:1px 1px;border-radius:6px;">⏹️ Dừng lại ngay</button>
-        <pre id="output"></pre>
-        <div class="list_website">
-        
-        </div>
-       *Nếu không hiện danh sách game bạn hãy vào Quản lý link Domibet bật lên nha , thêm sửa xóa tại web Domiking </br>
-	   *Nếu gặp lỗi gì hãy tải và sử dụng file mới nhất nhé</br>
-	   *Thành viên cố tình phá Domibet sẽ từ chối hỗ trợ , khóa tài khoản 
+        <button type="button" id="input_login" class="primary">
+          🚀 Nhập Login
+        </button>
+        <button type="button" id="solveCaptcha" class="primary">
+          🔐 Giải Captcha
+        </button>
+        <button type="button" id="submitForm" class="primary">
+          ✅️ Submit Form
+        </button>
+        <!-- nút gộp -->
+        <button type="button" id="quickLogin" class="primary">
+          ⚡ Đăng nhập nhanh
+        </button>
       </div>
+      <div class="btn-group-primary" style="overflow: hidden;/* overflow-x: scroll; */justify-content: space-evenly;">
+        <button type="button" id="link_nap" class="secondary" style="font-size: 10px;">Link Nạp</button>
+        <button type="button" id="link_rut" class="primary" style="font-size: 10px;">Link Rút</button>
+        <button type="button" id="input_pass_rut" class="" style="font-size: 10px;">Nhập pass rút</button>
+        <button type="button" id="close_ads" class="" style="font-size: 10px;">Đóng QC</button>
+        <button type="button" id="add_bank_account" class="" style="font-size: 10px;">Thêm ngân hàng</button>
+      </div>
+
+      <button type="button" id="stopAutomation" class="secondary"
+        style="background:#e74c3c;color:#fff;border:none;padding:1px 1px;border-radius:6px;">⏹️ Dừng lại ngay</button>
+      <pre id="output"></pre>
+      <div class="list_website">
+
+      </div>
+      *Nếu không hiện danh sách game bạn hãy vào Quản lý link nextgen bật lên nha , thêm sửa xóa tại web nextgen </br>
+      *Nếu gặp lỗi gì hãy tải và sử dụng file mới nhất nhé</br>
+      *Thành viên cố tình phá nextgen sẽ từ chối hỗ trợ , khóa tài khoản
+    </div>
 
 
     <!-- Tab: Cấu hình -->
     <div class="tab-content tab-config" style="display: none">
-      <div
-        class="row"
-        style="
+      <div class="row" style="
           display: flex;
           flex-direction: column;
           gap: 8px;
           margin-top: 10px;
-        "
-      >
+        ">
         <!-- <label>Chuỗi dữ liệu (dùng dấu <code>|</code>):</label> -->
-        <input
-          type="text"
-          id="user_name_bank_account"
-          placeholder="Tên chủ tài khoản"
-        />
+        <input type="text" id="user_name_bank_account" placeholder="Tên chủ tài khoản" />
         <input placeholder="Số tài khoản cần 19 ký tự" type="text" minlength="19" id="id_account" />
         <div style="display:flex;gap:8px;align-items:center;">
           <!-- Choose which bank list to use -->
@@ -132,117 +121,127 @@
             <option value="r88">DS(nhà KJC)</option>
           </select>
 
-          
+
           <select id="bank_name_select" style="min-width:140px;border-radius: 5px;padding: 10px;">
             <option value="">-- Chọn ngân hàng --</option>
           </select>
         </div>
-		
-		 <div style="color: aqua;"><b>Có 2 dạng ngân hàng đó nhé , KJC xx88 ,rr88, mm88 . Nếu không chọn đúng nó bị bị lỗi ở đoạn thêm ngân hàng or là thêm sai . Hãy chú ý nhé </b></div>
-		
+
+        <div style="color: aqua;"><b>Có 2 dạng ngân hàng đó nhé , KJC xx88 ,rr88, mm88 . Nếu không chọn đúng nó bị bị
+            lỗi ở đoạn thêm ngân hàng or là thêm sai . Hãy chú ý nhé </b></div>
+
         <input type="text" id="bank_name" placeholder="Tên ngân hàng" style="flex:1;" />
-        <textarea
-          id="bulkInput_create_data"
-          style="min-height: 100px"
-          placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua tele @domitron---"
-        ></textarea>
+        <textarea id="bulkInput_create_data" style="min-height: 100px"
+          placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua tele @nextgen---"></textarea>
         <div class="btn-group-secondary">
           <button type="button" id="applyBulk_create">📝 Tạo dữ liệu</button>
           <button type="button" id="save_value">💾 Lưu dữ liệu</button>
         </div>
       </div>
     </div>
-	<!-- Mấy cái vớ vẩn-->
-        
-     <div class="tab-content tab-linhtinh" style="display: none">
-     
-        
-<div class="row" style="margin-top: 10px;color: #ffffff;">
+    <!-- Mấy cái vớ vẩn-->
+
+    <div class="tab-content tab-linhtinh" style="display: none">
 
 
-<center><h3>Trung Tâm Tài Khoản </h3></center>
-  <center><button id="btnNAPTIEN">Nạp Tiền</button>
-  <button id="btnRUTTIEN">Rút Tiền</button>
-  <button id="btnKHUYENMAI">Khuyến Mại</button></br></br>
-  <button id="btnHOMTHU">Hộp Thư</button>
-  <button id="btnLSCUOC">LS Cược</button>
-  <button id="btnLSGD">LS Giao Dịch</button>
-  <button id="btnHOANTRA">Hoàn Trả</button></center>
-</div><div class="row" style="margin-top: 10px;color: #ffffff;"><center><h3>Game Hay Chạy Cược</h3></center>
- Chéo  : 
- <button id="btnTXR88">TX(R88)</button>
-  <button id="btnDG">DG</button>
-  <button id="btnSEXY">Sexy</button>
- </br></br>
-  Chạy : <button id="btnCUONTIEN">Cuộn(PP)</button>
-  <button id="btnTPV3">TPV3(YRG)</button>
-  <button id="btnDAPDA">Long(Jili)</button>
-  <button id="btnTAYDU">TâyDu(TP)</button></br></br>
-  <button id="btnNGOKHONG">NgộKhôg(FC)</button>
-  <button id="btnTTCAT">TT_Cắt</button>
-  <button id="btnTTBAT">TT_Bắn</button>
-  <button id="btnKLJL">JL Khủng Long</button>
-  </br></br>
- Cân : 
-  <button id="btnXSVR">XS(VR)</button>
-  <button id="btnOCSEN">Sên(R88)</button>
-  <button id="btnSIEUTOC">SiêuTốc(R88)</button>
-  <button id="btnJUN1R88">Jun1(R88)</button></br></br>
-  <button id="btnGW78W">GW78W</button>
-  
-  
-</div><div class="row" style="margin-top: 10px;color: #ffffff;">
-<center><h3>Phần Xin Khuyến Mại</h3>
-  <button id="btnKMHi88">KM HI88</button>
-  <button id="btnKMNew88">KM New88</button>
-  <button id="btnKMF8bet">KM F8Bet</button>
-  <button id="btnKMMB66">KM MB66</button></br></br>
-  <button id="btnKM789bet">KM 789Bet</button>
-  <button id="btnKMShbet">KM Shbet</button>
-  <button id="btnKMJun88">KM Jun88</button>
-  <button id="btnKM78Win">KM 78Win</button></br></br>
-  <button id="btnKMQQ88">KM QQ88</button>
-  <button id="btnKMRR88">KM RR88</button>
-  <button id="btnKMGK88">KM GK88</button></center>
-  
-</br>
+      <div class="row" style="margin-top: 10px;color: #2d3748;">
 
-</div>        
+
+        <center>
+          <h3>Trung Tâm Tài Khoản </h3>
+        </center>
+        <center><button id="btnNAPTIEN">Nạp Tiền</button>
+          <button id="btnRUTTIEN">Rút Tiền</button>
+          <button id="btnKHUYENMAI">Khuyến Mại</button></br></br>
+          <button id="btnHOMTHU">Hộp Thư</button>
+          <button id="btnLSCUOC">LS Cược</button>
+          <button id="btnLSGD">LS Giao Dịch</button>
+          <button id="btnHOANTRA">Hoàn Trả</button>
+        </center>
+      </div>
+      <div class="row" style="margin-top: 10px;color: #2d3748;">
+        <center>
+          <h3>Game Hay Chạy Cược</h3>
+        </center>
+        Chéo :
+        <button id="btnTXR88">TX(R88)</button>
+        <button id="btnDG">DG</button>
+        <button id="btnSEXY">Sexy</button>
+        </br></br>
+        Chạy : <button id="btnCUONTIEN">Cuộn(PP)</button>
+        <button id="btnTPV3">TPV3(YRG)</button>
+        <button id="btnDAPDA">Long(Jili)</button>
+        <button id="btnTAYDU">TâyDu(TP)</button></br></br>
+        <button id="btnNGOKHONG">NgộKhôg(FC)</button>
+        <button id="btnTTCAT">TT_Cắt</button>
+        <button id="btnTTBAT">TT_Bắn</button>
+        <button id="btnKLJL">JL Khủng Long</button>
+        </br></br>
+        Cân :
+        <button id="btnXSVR">XS(VR)</button>
+        <button id="btnOCSEN">Sên(R88)</button>
+        <button id="btnSIEUTOC">SiêuTốc(R88)</button>
+        <button id="btnJUN1R88">Jun1(R88)</button></br></br>
+        <button id="btnGW78W">GW78W</button>
+
+
+      </div>
+      <div class="row" style="margin-top: 10px;color: #2d3748;">
+        <center>
+          <h3>Phần Xin Khuyến Mại</h3>
+          <button id="btnKMHi88">KM HI88</button>
+          <button id="btnKMNew88">KM New88</button>
+          <button id="btnKMF8bet">KM F8Bet</button>
+          <button id="btnKMMB66">KM MB66</button></br></br>
+          <button id="btnKM789bet">KM 789Bet</button>
+          <button id="btnKMShbet">KM Shbet</button>
+          <button id="btnKMJun88">KM Jun88</button>
+          <button id="btnKM78Win">KM 78Win</button></br></br>
+          <button id="btnKMQQ88">KM QQ88</button>
+          <button id="btnKMRR88">KM RR88</button>
+          <button id="btnKMGK88">KM GK88</button>
+        </center>
+
+        </br>
+
+      </div>
 
     </div>
-	
-	
-	
-	
-	 <!-- Mấy cái vớ vẩn-->
-        
-     <div class="tab-content tab-import" style="display: none">
-     
-        
-          <div class="row" style="margin-top: 10px;color: #ffffff;">
-		  ANH EM LƯU Ý LÀ IP V4 NHA </br>
-	  <input type="text" id="proxyInput" placeholder="ip:port hoặc ip:port:username:password" /></br></br>
- <button id="checkBtn">Check</button> <button id="saveBtn">Lưu Proxy</button></br></br>
-  <div id="status"></div>
-         
-  <div id="proxyList"></div>
-	      
-      </div>
-	  
-	  <div class="row" style="margin-top: 10px;color: #ffffff;"></span>
 
-	  <center> <button id="toggle">Tắt lưu pass</button>
-  <button id="clear">Reset chrom</button>
-  <button id="closeTabs">Đóng tab trống</button>
- <center>
-  <p id="status" style="margin-top:10px;color:green;"></p></div>
-	      <div class="row" style="margin-top: 10px;color: #ffffff;">
-	  *Thuê sim tại : smsbet.top - sv5.smsbet.top</br>
-	  *Mua proxy tại : proxyking.Pro </br></br>
-	  *Liên hệ hỗ trợ : @domitron | Nhóm : @casino8386
- </div>
-	      </div>
-	
+
+
+
+    <!-- Mấy cái vớ vẩn-->
+
+    <div class="tab-content tab-import" style="display: none">
+
+
+      <div class="row" style="margin-top: 10px;color: #2d3748;">
+        ANH EM LƯU Ý LÀ IP V4 NHA </br>
+        <input type="text" id="proxyInput" placeholder="ip:port hoặc ip:port:username:password" /></br></br>
+        <button id="checkBtn">Check</button> <button id="saveBtn">Lưu Proxy</button></br></br>
+        <div id="status"></div>
+
+        <div id="proxyList"></div>
+
+      </div>
+
+      <div class="row" style="margin-top: 10px;color: #2d3748;"></span>
+
+        <center> <button id="toggle">Tắt lưu pass</button>
+          <button id="clear">Reset chrom</button>
+          <button id="closeTabs">Đóng tab trống</button>
+          <center>
+            <p id="status" style="margin-top:10px;color:green;"></p>
+      </div>
+      <div class="row" style="margin-top: 10px;color: #2d3748;">
+        *Thuê sim tại : nextgen - nextgen</br>
+        *Mua proxy tại : nextgen </br></br>
+        *Liên hệ hỗ trợ : @nextgen | Nhóm : @nextgen
+      </div>
+    </div>
+
     <script src="popup.js"></script>
-  </body>
+</body>
+
 </html>

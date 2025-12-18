@@ -1,145 +1,277 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Domibet - Domino V1.2.999 - Sản phẩm của @domino</title>
-  <meta name="description" content="Domibet — sản phẩm của @domino. Bán sim giá rẻ, bán proxy. Tham gia nhóm và kênh để biết thêm chi tiết." />
+  <title>nextgen - nextgen V1.2.999 - Sản phẩm của @nextgen</title>
+  <meta name="description"
+    content="nextgen — sản phẩm của @nextgen. Bán sim giá rẻ, bán proxy. Tham gia nhóm và kênh để biết thêm chi tiết." />
   <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --accent:#e11d48; /* đỏ tươi */
-      --muted:#94a3b8;
-      --glass: rgba(255,255,255,0.03);
-      --radius:14px;
-      --maxw:1100px;
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent: #e11d48;
+      /* đỏ tươi */
+      --muted: #94a3b8;
+      --glass: rgba(255, 255, 255, 0.03);
+      --radius: 14px;
+      --maxw: 1100px;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background: radial-gradient(1200px 500px at 10% 10%, rgba(225,29,72,0.06), transparent),
-                  linear-gradient(180deg, #071028 0%, #061627 100%);
-      color:#e6eef8;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:40px 20px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:16px;
+
+    * {
+      box-sizing: border-box
     }
 
-    .container{
-      width:100%;
-      max-width:var(--maxw);
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:var(--radius);
-      padding:28px;
-      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 500px at 10% 10%, rgba(225, 29, 72, 0.06), transparent),
+        linear-gradient(180deg, #071028 0%, #061627 100%);
+      color: #e6eef8;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 40px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--maxw);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
       backdrop-filter: blur(6px);
-      border:1px solid rgba(255,255,255,0.03);
+      border: 1px solid rgba(255, 255, 255, 0.03);
     }
 
-    header{
-      display:flex;
-      gap:20px;
-      align-items:center;
-      margin-bottom:18px;
+    header {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 18px;
     }
-    .logo{
-      width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#a21caf);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;box-shadow:0 6px 18px rgba(225,29,72,0.18)
-    }
-    .title h1{margin:0;font-size:20px}
-    .title p{margin:4px 0 0;color:var(--muted);font-size:14px}
 
-    .grid{
-      display:grid;
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #a21caf);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(225, 29, 72, 0.18)
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 20px
+    }
+
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .grid {
+      display: grid;
       grid-template-columns: 1fr 360px;
-      gap:20px;
-      align-items:start;
+      gap: 20px;
+      align-items: start;
     }
 
-    .card{background:var(--card);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03)}
-
-    .hero{
-      padding:18px 12px;
-      border-radius:10px;
-      background: linear-gradient(90deg, rgba(225,29,72,0.06), rgba(162,26,175,0.03));
-      margin-bottom:16px;
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.03)
     }
-    .hero h2{margin:0 0 6px;font-size:22px}
-    .hero p{margin:0;color:var(--muted)}
 
-    .features{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-    .feature{display:flex;gap:12px;align-items:center}
-    .feature svg{width:38px;height:38px;flex-shrink:0}
-    .feature .fcontent{font-size:15px}
-    .muted{color:var(--muted);font-size:14px}
-
-    .links{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    a.btn{
-      display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;text-decoration:none;color:white;background:linear-gradient(90deg,var(--accent),#a21caf);font-weight:600;box-shadow:0 8px 20px rgba(162,26,175,0.12);
+    .hero {
+      padding: 18px 12px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(225, 29, 72, 0.06), rgba(162, 26, 175, 0.03));
+      margin-bottom: 16px;
     }
-    a.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:10px 14px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:10px}
 
-    aside .side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .side-head h3{margin:0;font-size:16px}
+    .hero h2 {
+      margin: 0 0 6px;
+      font-size: 22px
+    }
 
-    .contact{display:flex;flex-direction:column;gap:8px}
-    .small{font-size:13px;color:var(--muted)}
+    .hero p {
+      margin: 0;
+      color: var(--muted)
+    }
 
-    footer{margin-top:16px;text-align:center;color:var(--muted);font-size:14px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.02)}
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px
+    }
+
+    .feature {
+      display: flex;
+      gap: 12px;
+      align-items: center
+    }
+
+    .feature svg {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0
+    }
+
+    .feature .fcontent {
+      font-size: 15px
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px
+    }
+
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(90deg, var(--accent), #a21caf);
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(162, 26, 175, 0.12);
+    }
+
+    a.ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    aside .side-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px
+    }
+
+    .side-head h3 {
+      margin: 0;
+      font-size: 16px
+    }
+
+    .contact {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    footer {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.02)
+    }
 
     /* responsive */
-    @media (max-width:880px){
-      .grid{grid-template-columns:1fr}
-      aside{order:2}
+    @media (max-width:880px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+
+      aside {
+        order: 2
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
       <div class="logo">D<i style="font-size:12px;opacity:0.85">M</i></div>
       <div class="title">
-        <h1>Domibet — Sản phẩm của <span style="color:var(--accent)">@domino</span></h1>
+        <h1>nextgen — Sản phẩm của <span style="color:var(--accent)">@nextgen</span></h1>
         <p>Giải pháp nhỏ gọn — nhanh chóng — tin cậy</p>
       </div>
     </header>
 
-</br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+    </br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
     <div class="grid">
       <main>
         <div class="card hero">
-          <h2>Chào mừng đến với Domibet</h2>
-          <p class="muted">Domibet là sản phẩm được phát triển bởi @domino. Dành cho những ai cần giải pháp tiện lợi, nhanh và chi phí hợp lý.</p>
+          <h2>Chào mừng đến với nextgen</h2>
+          <p class="muted">nextgen là sản phẩm được phát triển bởi @nextgen. Dành cho những ai cần giải pháp tiện lợi,
+            nhanh và chi phí hợp lý.</p>
 
           <div class="features">
             <div class="feature">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" stroke-opacity="0.7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" stroke-opacity="0.7" />
+              </svg>
               <div class="fcontent">Giao diện thân thiện, dễ sử dụng — phù hợp cho mọi thiết bị.</div>
             </div>
 
             <div class="feature">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v6l4 2" stroke="currentColor" stroke-opacity="0.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3v6l4 2" stroke="currentColor" stroke-opacity="0.7" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
               <div class="fcontent">Hoạt động ổn định, tốc độ xử lý nhanh.</div>
             </div>
 
             <div class="feature">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-opacity="0.7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-opacity="0.7" />
+              </svg>
               <div class="fcontent">Hỗ trợ kênh thông tin trực tiếp từ nhóm và kênh Telegram.</div>
             </div>
           </div>
 
           <div class="links">
-            <a class="btn" href="https://t.me/casino8386" target="_blank" rel="noopener">Tham gia nhóm chat
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="opacity:0.9"><path d="M5 12h14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <a class="btn" href="https://t.me/nextgen" target="_blank" rel="noopener">Tham gia nhóm chat
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="opacity:0.9">
+                <path d="M5 12h14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </a>
 
-            <a class="ghost" href="https://t.me/domiking_tron" target="_blank" rel="noopener">Kênh Telegram của nhóm</a>
+            <a class="ghost" href="https://t.me/nextgen" target="_blank" rel="noopener">Kênh Telegram của nhóm</a>
           </div>
         </div>
 
@@ -147,20 +279,21 @@
           <h3 style="margin:0 0 8px">Dịch vụ & Sản phẩm</h3>
           <p class="muted">Chúng tôi cung cấp:</p>
           <ul class="muted" style="margin:10px 0 0;padding-left:18px">
-            <li>Bán sim giá rẻ — smsbet.top và sv5.smsbet.top</li>
-            <li>Bán proxy chất lượng — Proxyking.pro</li>
+            <li>Bán sim giá rẻ — nextgen và nextgen</li>
+            <li>Bán proxy chất lượng — nextgen</li>
           </ul>
 
           <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-            <a class="btn" href="https://smsbet.top" target="_blank" rel="noopener">Xem Sim giá rẻ</a>
-            <a class="btn" href="https://sv5.smsbet.top" target="_blank" rel="noopener">SV5 - Sim rẻ</a>
-            <a class="btn" href="https://proxyking.pro" target="_blank" rel="noopener">Xem Proxy</a>
+            <a class="btn" href="https://nextgen" target="_blank" rel="noopener">Xem Sim giá rẻ</a>
+            <a class="btn" href="https://nextgen" target="_blank" rel="noopener">SV5 - Sim rẻ</a>
+            <a class="btn" href="https://nextgen" target="_blank" rel="noopener">Xem Proxy</a>
           </div>
         </div>
 
         <div class="card" style="margin-top:14px">
           <h3 style="margin:0 0 8px">Lời cảm ơn</h3>
-          <p>Xin chân thành cảm ơn quý khách đã quan tâm và ủng hộ Domibet — sản phẩm của <strong>@domino</strong>. Mọi ý kiến đóng góp vui lòng liên hệ qua nhóm Telegram để được hỗ trợ nhanh nhất.</p>
+          <p>Xin chân thành cảm ơn quý khách đã quan tâm và ủng hộ nextgen — sản phẩm của <strong>@nextgen</strong>. Mọi
+            ý kiến đóng góp vui lòng liên hệ qua nhóm Telegram để được hỗ trợ nhanh nhất.</p>
         </div>
       </main>
 
@@ -174,36 +307,37 @@
           <div class="contact">
             <div>
               <div class="small">Nhóm trò chuyện</div>
-              <a class="ghost" href="https://t.me/casino8386" target="_blank" rel="noopener">https://t.me/casino8386</a>
+              <a class="ghost" href="https://t.me/nextgen" target="_blank" rel="noopener">https://t.me/nextgen</a>
             </div>
 
             <div>
               <div class="small">Kênh của nhóm</div>
-              <a class="ghost" href="https://t.me/domiking_tron" target="_blank" rel="noopener">https://t.me/domiking_tron</a>
+              <a class="ghost" href="https://t.me/nextgen" target="_blank" rel="noopener">https://t.me/nextgen</a>
             </div>
 
             <div>
               <div class="small">Bán sim</div>
-              <a class="ghost" href="https://smsbet.top" target="_blank" rel="noopener">smsbet.top</a>
+              <a class="ghost" href="https://nextgen" target="_blank" rel="noopener">nextgen</a>
             </div>
 
             <div>
               <div class="small">Bán proxy</div>
-              <a class="ghost" href="https://proxyking.pro" target="_blank" rel="noopener">Proxyking.pro</a>
+              <a class="ghost" href="https://nextgen" target="_blank" rel="noopener">nextgen</a>
             </div>
           </div>
 
-          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)"/>
+          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
 
-          <div class="muted" style="font-size:13px">Người phụ trách: <strong>@domino</strong></div>
+          <div class="muted" style="font-size:13px">Người phụ trách: <strong>@nextgen</strong></div>
         </div>
       </aside>
     </div>
 
     <footer>
       <div>Xin cảm ơn và mong nhận được sự ủng hộ từ mọi người.</div>
-      <div style="margin-top:6px;color:var(--muted);font-size:13px">© Domibet — Sản phẩm của @domino</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:13px">© nextgen — Sản phẩm của @nextgen</div>
     </footer>
   </div>
 </body>
+
 </html>

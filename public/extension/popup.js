@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!existing) {
       const banner = document.createElement("div");
       banner.id = "debug-banner";
-      banner.textContent = "Domibet - @domitron";
+      banner.textContent = "nextgen - @nextgen";
       banner.style.cssText =
         "position:fixed;bottom:6px;right:6px;background:#e6ffed;color:#064;z-index:9999;padding:4px 8px;border-radius:6px;font-size:12px";
       document.body.appendChild(banner);
@@ -1566,7 +1566,7 @@ function randomAccountName() {
     "immortal",
     "heroic",
     "ruler",
-    "dominator",
+    "nextgen",
     "leader",
     "chief",
     "captain",
@@ -1630,11 +1630,11 @@ function randomAccountName() {
     "bet",
     "sms",
     "vipbet",
-    "domking",
+    "nextgen",
     "kingdom",
     "godbet",
-    "domi",
-    "domino",
+    "nextgen",
+    "nextgen",
     "kingbet",
     "smsbet",
     "otpvip",
@@ -1945,13 +1945,13 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           } catch (error) {
             showNotification(
-              "Từ chối lưu dữ liệu , vui lòng liên hệ @domitron",
+              "Từ chối lưu dữ liệu , vui lòng liên hệ @nextgen",
               "error"
             );
           }
         } else {
           showNotification(
-            "Từ chối lưu dữ liệu , vui lòng liên hệ @domitron",
+            "Từ chối lưu dữ liệu , vui lòng liên hệ @nextgen",
             "error"
           );
         }
@@ -2071,7 +2071,7 @@ async function init() {
           showNotification("Đã lưu dữ liệu thành công rồi!", "success");
         } else {
           showNotification(
-            "API từ chối lưu dữ liệu , liên hệ tele @domitron !",
+            "API từ chối lưu dữ liệu , liên hệ tele @nextgen !",
             "error"
           );
         }
@@ -2132,7 +2132,7 @@ async function loadSiteList() {
 
     if (results.length === 0) {
       document.getElementById("output").innerText =
-        "Vui lòng liên hệ @domitron để báo lỗi.";
+        "Vui lòng liên hệ @nextgen để báo lỗi.";
     }
 
     // Build modern selector UI: search, select-all, card grid
@@ -2288,7 +2288,7 @@ async function loadSiteList() {
     const runBtn = document.createElement("button");
     runBtn.type = "button";
     runBtn.className = "primary";
-    runBtn.textContent = "Bắt đầu kiếm tiền cùng Domino";
+    runBtn.textContent = "Bắt đầu kiếm tiền cùng nextgen";
     runBtn.style.fontSize = "14px"; // chữ nhỏ gọn
     runBtn.style.padding = "4px 8px"; // nút gọn lại
     runBtn.addEventListener("click", async () => {
@@ -2593,17 +2593,12 @@ async function solveCaptchaCommon() {
   try {
     showNotification(`Bắt đầu giải captcha`, "success");
 
-    // 1. Gọi API JSON từ server bạn
-    const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
-
-    if (!apikey) return alert("❌ Không lấy được API key");
-
     // 2. Truyền apikey vào nội dung trang đang mở
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
-        args: [apikey],
-        func: async (apikey) => {
+        args: [APIKEY_CAPCHA],
+        func: async (APIKEY_CAPCHA) => {
           const solveCaptcha = async (base64) => {
             try {
               const response = await fetch(
@@ -2627,7 +2622,7 @@ async function solveCaptchaCommon() {
                 alert(
                   "❌ Giải mã thất bại: " +
                     (result.message || "Không rõ lỗi") +
-                    "\n\n🔑 Liên hệ @domitron để setup."
+                    "\n\n🔑 Liên hệ @nextgen để setup."
                 );
                 return null;
               }

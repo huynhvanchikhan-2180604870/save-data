@@ -81,9 +81,9 @@ body.light {
 }
 /* Config group (domain & named) */
 .config-group {
-  background: #23272f;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 14px;
-  border: 1.5px solid #353945;
+  border: 1.5px solid rgba(96, 123, 143, 0.3);
   margin: 18px 0 18px 0;
   padding: 16px 14px 10px 14px;
   display: flex;
@@ -100,17 +100,17 @@ body.light {
   min-width: 120px;
 }
 .config-named {
-  background: #23272f;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   padding: 10px 12px 8px 12px;
-  border: 1px solid #353945;
+  border: 1px solid rgba(96, 123, 143, 0.3);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 .config-named label {
   font-size: 13px;
-  color: #b7aaff;
+  color: #4a5568;
   margin-bottom: 2px;
 }
 .config-named-row {
@@ -123,26 +123,26 @@ body.light {
   flex: 1;
   padding: 9px 12px;
   border-radius: 10px;
-  border: 2px solid #353945;
+  border: 2px solid rgba(96, 123, 143, 0.4);
   font-size: 14px;
-  background: #181a20;
-  color: #f3f4f6;
+  background: #ffffff;
+  color: #2d3748;
   transition: border 0.2s, box-shadow 0.2s;
   min-width: 0;
   box-sizing: border-box;
 }
 #configNameInput:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px #7c3aed55;
+  border-color: #607B8F;
+  box-shadow: 0 0 0 2px rgba(96, 123, 143, 0.4);
 }
 #namedConfigsList {
   flex: 1;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 2px solid #353945;
+  border: 2px solid rgba(96, 123, 143, 0.4);
   font-size: 14px;
-  background: #181a20;
-  color: #f3f4f6;
+  background: #ffffff;
+  color: #2d3748;
   min-width: 0;
   box-sizing: border-box;
 }
@@ -201,9 +201,9 @@ body::-webkit-scrollbar {
 .wrap {
   width: 350px;
   padding: 8px;
-  background: #FFEB3B;
+  background: #4B9DA9;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  box-shadow: 0 8px 32px rgba(75, 157, 169, 0.45);
   margin: 0px;
   max-height: 800px;
   /* Removed button.primary and button.primary:hover styles */
@@ -211,9 +211,9 @@ body::-webkit-scrollbar {
 .row {
   margin-bottom: 6px;
   padding: 5px;
-  background: #23272f;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 5px;
-  border: 1.5px solid #353945;
+  border: 1.5px solid rgba(96, 123, 143, 0.3);
 }
 
 .row-title {
@@ -222,17 +222,17 @@ body::-webkit-scrollbar {
   align-items: center;
   margin-bottom: 10px;
   font-weight: 600;
-  color: #4a5568;
+  color: #2d3748;
 }
 
 .badge {
-  background: #7c3aed;
+  background: #607B8F;
   color: #fff;
   padding: 1px 10px;
   border-radius: 18px;
   font-size: 9px;
   font-weight: 300;
-  box-shadow: 0 2px 8px #7c3aed33;
+  box-shadow: 0 2px 8px rgba(96, 123, 143, 0.3);
 }
 
 
@@ -240,13 +240,13 @@ textarea {
   width: 100%;
   min-height: 60px;
   padding: 3px;
-  border: 2px solid #ffffff;
+  border: 2px solid rgba(96, 123, 143, 0.4);
   border-radius: 10px;
   resize: vertical;
   font-family: inherit;
   font-size: 11px;
-  background: #23272f;
-  color: #f3f4f6;
+  background: #ffffff;
+  color: #2d3748;
   transition: border 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
@@ -254,51 +254,45 @@ textarea {
 #user_name_bank_account, #id_account, #bank_name {
   width: 100%;
   padding: 12px;
-  border: 2px solid #353945;
+  border: 2px solid rgba(96, 123, 143, 0.4);
   border-radius: 10px;
   resize: vertical;
   font-family: inherit;
   font-size: 15px;
-  background: #23272f;
-  color: #f3f4f6;
+  background: #ffffff;
+  color: #2d3748;
   transition: border 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
 textarea:focus {
   outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px #7c3aed55;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #607B8F;
+  box-shadow: 0 0 0 2px rgba(96, 123, 143, 0.4);
 }
 
 #fields {
   display: grid;
   gap: 10px;
-  border: 2px dashed #cbd5e0;
+  border: 2px dashed rgba(96, 123, 143, 0.4);
   padding: 12px;
   border-radius: 12px;
-  background: #f7fafc;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .field {
-  border: 2px solid #353945;
+  border: 2px solid rgba(96, 123, 143, 0.3);
   border-radius: 10px;
   padding: 12px;
-  background: #23272f;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   transition: border 0.2s, box-shadow 0.2s;
   min-width: 0;
 }
 
 .field:hover {
-  border-color: #7c3aed;
-  box-shadow: 0 4px 16px #7c3aed22;
+  border-color: #607B8F;
+  box-shadow: 0 4px 16px rgba(96, 123, 143, 0.3);
 }
 
 .field .line { 
@@ -319,35 +313,37 @@ button {
   padding: 0px 5px;
   border-radius: 5px;
   cursor: pointer;
-  background: #ff0000;
+  background: #607B8F;
   color: #ffffff;
   font-weight: 500;
   font-size: 12px;
   transition: background 0.2s, box-shadow 0.2s, color 0.2s;
-  border: 2px solid #7c3aed33;
+  border: 2px solid rgba(96, 123, 143, 0.3);
   min-width: 55px;
-  box-shadow: 0 2px 8px #7c3aed22;
+  box-shadow: 0 2px 8px rgba(96, 123, 143, 0.25);
 }
 .field input { 
   flex: 1; 
   padding: 8px 10px; 
-  border: 2px solid #e2e8f0; 
+  border: 2px solid rgba(96, 123, 143, 0.3); 
   border-radius: 10px; 
   font-size: 14px;
   transition: all 0.2s ease;
   min-width: 0;
   box-sizing: border-box;
+  background: #ffffff;
+  color: #2d3748;
 }
 .field input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #607B8F;
+  box-shadow: 0 0 0 3px rgba(96, 123, 143, 0.2);
 }
 .field .enabled { 
   flex: 0 0 auto; 
   width: 18px; 
   height: 18px; 
-  accent-color: #667eea;
+  accent-color: #607B8F;
 }
 
 .field .label { 
@@ -370,36 +366,36 @@ button {
 
 
 .hint {
-  color: #b7aaff;
+  color: #4a5568;
   font-size: 13px;
   line-height: 1.4;
   text-align: center;
   padding: 12px;
-  background: #23272f;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 10px;
-  border: 1.5px solid #353945;
+  border: 1.5px solid rgba(96, 123, 143, 0.3);
   margin-top: 16px;
 }
 .hint code {
-  background: #353945;
+  background: rgba(96, 123, 143, 0.15);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   font-size: 12px;
-  color: #a78bfa;
+  color: #607B8F;
 }
 
 button.primary { 
-  background: linear-gradient(135deg, #ff0000, #ff0000);
+  background: linear-gradient(135deg, #607B8F, #5a6f7f);
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(96, 123, 143, 0.4);
 }
 
 button.primary:hover { 
-  background: linear-gradient(135deg, #5a67d8, #6b46c1);
+  background: linear-gradient(135deg, #5a6f7f, #607B8F);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(96, 123, 143, 0.5);
 }
 
 .btns { 
@@ -438,7 +434,7 @@ button.primary:hover {
 .toggles input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #667eea;
+  accent-color: #607B8F;
 }
 
 
@@ -455,7 +451,7 @@ button.primary:hover {
   animation: slideDown 0.3s ease-out;
   max-width: 400px;
   text-align: center;
-  box-shadow: 0 4px 16px #7c3aed55;
+  box-shadow: 0 4px 16px rgba(96, 123, 143, 0.4);
 }
 .notification.success {
   background: #10b981;
@@ -468,9 +464,9 @@ button.primary:hover {
   border: 2px solid #dc2626;
 }
 .notification.info {
-  background: #7c3aed;
+  background: #607B8F;
   color: #fff;
-  border: 2px solid #a78bfa;
+  border: 2px solid #5a7a8a;
 }
 
 @keyframes slideDown {
@@ -509,16 +505,16 @@ button.primary:hover {
 
 /* Progress Bar Styles */
 .progress-container {
-  background: #23272f;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 10px;
   padding: 12px;
-  border: 1.5px solid #353945;
+  border: 1.5px solid rgba(96, 123, 143, 0.3);
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #353945;
+  background: rgba(96, 123, 143, 0.3);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -526,13 +522,13 @@ button.primary:hover {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #607B8F, #4B9DA9);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
 .progress-text {
-  color: #b7aaff;
+  color: #4a5568;
   font-size: 12px;
   font-weight: 600;
   text-align: center;
@@ -540,7 +536,7 @@ button.primary:hover {
 }
 
 .progress-step {
-  color: #7c3aed;
+  color: #607B8F;
   font-size: 11px;
   text-align: center;
   font-weight: 500;

@@ -485,9 +485,6 @@ function setupAutoFillWithdraw() {
   } catch (e) {}
 }
 
-
-
-
 // content.js
 // Updated complete content script. Main change: prefer the `captcha` field from API response
 // (and related common names) so we fill the captcha input with the correct value instead of `message`.
@@ -501,11 +498,7 @@ function setupAutoFillWithdraw() {
 // - background/service worker must handle message { action: 'fetchImageAsBase64', url } and return { ok, base64, mime }.
 // - manifest must include proper host_permissions and this file as a content_script.
 
-
-
-
-
-const API_URL = 'https://anticaptcha.top/api/captcha';
+const API_URL = "https://anticaptcha.top/api/captcha";
 
 if (!window.__captchaQuickButtonInjected) {
   window.__captchaQuickButtonInjected = true;
@@ -522,20 +515,22 @@ if (!window.__captchaQuickButtonInjected) {
 
     function base64ToBlob(b64, mime) {
       const u8 = b64ToUint8Array(b64);
-      return new Blob([u8], { type: mime || 'application/octet-stream' });
+      return new Blob([u8], { type: mime || "application/octet-stream" });
     }
 
-    function textToBlob(text, mime = 'text/plain;charset=utf-8') {
+    function textToBlob(text, mime = "text/plain;charset=utf-8") {
       return new Blob([text], { type: mime });
     }
 
     // parse data URI -> { mime, isBase64, data } or null
     function extractDataUri(dataUri) {
-      const m = dataUri.match(/^data:([^;]+)(;charset=[^;]+)?(;base64)?,(.*)$/s);
+      const m = dataUri.match(
+        /^data:([^;]+)(;charset=[^;]+)?(;base64)?,(.*)$/s
+      );
       if (!m) return null;
-      const mime = m[1] || '';
+      const mime = m[1] || "";
       const isBase64 = !!m[3];
-      const data = m[4] || '';
+      const data = m[4] || "";
       return { mime, isBase64, data };
     }
 
@@ -543,11 +538,16 @@ if (!window.__captchaQuickButtonInjected) {
     function fetchImageBase64ByBackground(url) {
       return new Promise((resolve, reject) => {
         try {
-          chrome.runtime.sendMessage({ action: 'fetchImageAsBase64', url }, (resp) => {
-            if (!resp) return reject(new Error('No response from background'));
-            if (!resp.ok) return reject(new Error(resp.error || 'Fetch failed'));
-            resolve(resp); // { ok:true, base64, mime }
-          });
+          chrome.runtime.sendMessage(
+            { action: "fetchImageAsBase64", url },
+            (resp) => {
+              if (!resp)
+                return reject(new Error("No response from background"));
+              if (!resp.ok)
+                return reject(new Error(resp.error || "Fetch failed"));
+              resolve(resp); // { ok:true, base64, mime }
+            }
+          );
         } catch (e) {
           reject(e);
         }
@@ -559,28 +559,28 @@ if (!window.__captchaQuickButtonInjected) {
     function imageSrcToPngBase64FromObjectUrl(url, width, height) {
       return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        img.crossOrigin = "anonymous";
         img.onload = () => {
           try {
             const w = width || img.naturalWidth || img.width || 200;
             const h = height || img.naturalHeight || img.height || 80;
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             canvas.width = w;
             canvas.height = h;
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext("2d");
             // white background helps for transparent SVGs
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, w, h);
             ctx.drawImage(img, 0, 0, w, h);
-            const dataUrl = canvas.toDataURL('image/png');
-            const comma = dataUrl.indexOf(',');
-            const b64 = comma === -1 ? '' : dataUrl.slice(comma + 1);
+            const dataUrl = canvas.toDataURL("image/png");
+            const comma = dataUrl.indexOf(",");
+            const b64 = comma === -1 ? "" : dataUrl.slice(comma + 1);
             resolve(b64);
           } catch (e) {
             reject(e);
           }
         };
-        img.onerror = (e) => reject(new Error('Image load error: ' + e));
+        img.onerror = (e) => reject(new Error("Image load error: " + e));
         img.src = url;
         // fallback if already complete
         if (img.complete) {
@@ -588,16 +588,16 @@ if (!window.__captchaQuickButtonInjected) {
             try {
               const w = width || img.naturalWidth || img.width || 200;
               const h = height || img.naturalHeight || img.height || 80;
-              const canvas = document.createElement('canvas');
+              const canvas = document.createElement("canvas");
               canvas.width = w;
               canvas.height = h;
-              const ctx = canvas.getContext('2d');
-              ctx.fillStyle = '#ffffff';
+              const ctx = canvas.getContext("2d");
+              ctx.fillStyle = "#ffffff";
               ctx.fillRect(0, 0, w, h);
               ctx.drawImage(img, 0, 0, w, h);
-              const dataUrl = canvas.toDataURL('image/png');
-              const comma = dataUrl.indexOf(',');
-              const b64 = comma === -1 ? '' : dataUrl.slice(comma + 1);
+              const dataUrl = canvas.toDataURL("image/png");
+              const comma = dataUrl.indexOf(",");
+              const b64 = comma === -1 ? "" : dataUrl.slice(comma + 1);
               resolve(b64);
             } catch (err) {
               reject(err);
@@ -607,49 +607,52 @@ if (!window.__captchaQuickButtonInjected) {
       });
     }
 
-async function loadDefaultApiKey() {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ action: "getApiKey" }, (res) => {
-      if (res?.success) {
-        console.log("✅ Lấy key từ background:", res.apiKey);
-        resolve(res.apiKey);
-      } else {
-        alert("❌ Không thể tải API key: " + (res?.error || "Không rõ nguyên nhân"));
-        resolve(null);
-      }
-    });
-  });
-}
-
-
-
-
-async function getApiKeyFromStorage() {
-  const DEFAULT_API_KEY = await loadDefaultApiKey();
-  if (!DEFAULT_API_KEY) return alert("❌ Không lấy được API key - sai key cần setup trên domiking nha");
-
-  return new Promise((resolve) => {
-    try {
-      if (chrome?.storage?.sync) {
-        chrome.storage.sync.get(['anticaptcha_apikey'], (data) => {
-          resolve(data?.anticaptcha_apikey || DEFAULT_API_KEY);
+    async function loadDefaultApiKey() {
+      return new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: "getApiKey" }, (res) => {
+          if (res?.success) {
+            console.log("✅ Lấy key từ background:", res.apiKey);
+            resolve(res.apiKey);
+          } else {
+            alert(
+              "❌ Không thể tải API key: " +
+                (res?.error || "Không rõ nguyên nhân")
+            );
+            resolve(null);
+          }
         });
-      } else {
-        resolve(localStorage.getItem('anticaptcha_apikey') || DEFAULT_API_KEY);
-      }
-    } catch (e) {
-      console.error("❌ Lỗi khi đọc storage:", e);
-      resolve(DEFAULT_API_KEY);
+      });
     }
-  });
-}
 
+    async function getApiKeyFromStorage() {
+      const DEFAULT_API_KEY = await loadDefaultApiKey();
+      if (!DEFAULT_API_KEY)
+        return alert(
+          "❌ Không lấy được API key - sai key cần setup trên nextgen nha"
+        );
 
+      return new Promise((resolve) => {
+        try {
+          if (chrome?.storage?.sync) {
+            chrome.storage.sync.get(["anticaptcha_apikey"], (data) => {
+              resolve(data?.anticaptcha_apikey || DEFAULT_API_KEY);
+            });
+          } else {
+            resolve(
+              localStorage.getItem("anticaptcha_apikey") || DEFAULT_API_KEY
+            );
+          }
+        } catch (e) {
+          console.error("❌ Lỗi khi đọc storage:", e);
+          resolve(DEFAULT_API_KEY);
+        }
+      });
+    }
 
     // Try to parse many possible shapes of API response to extract solved text
     // PRIORITY: json.captcha -> json.code -> json.value -> json.text/json.result/... -> fallback short string
     function parseApiResponse(json) {
-      if (!json) return '';
+      if (!json) return "";
       // common names first
       const firstCandidates = [
         json?.captcha,
@@ -659,10 +662,10 @@ async function getApiKeyFromStorage() {
         json?.text,
         json?.solution,
         json?.answer,
-        json?.message // keep message as very low priority
+        json?.message, // keep message as very low priority
       ];
       for (const c of firstCandidates) {
-        if (typeof c === 'string' && c.trim()) return c.trim();
+        if (typeof c === "string" && c.trim()) return c.trim();
       }
       // nested fields
       const nested = [
@@ -670,59 +673,78 @@ async function getApiKeyFromStorage() {
         json?.data?.code,
         json?.data?.text,
         json?.data?.solution,
-        json?.result?.text
+        json?.result?.text,
       ];
       for (const c of nested) {
-        if (typeof c === 'string' && c.trim()) return c.trim();
+        if (typeof c === "string" && c.trim()) return c.trim();
       }
       // fallback: top-level short string values
       for (const k of Object.keys(json)) {
         const v = json[k];
-        if (typeof v === 'string' && v.trim() && v.length < 20) return v.trim();
+        if (typeof v === "string" && v.trim() && v.length < 20) return v.trim();
       }
       // if json itself is string
-      if (typeof json === 'string' && json.trim()) return json.trim();
-      return '';
+      if (typeof json === "string" && json.trim()) return json.trim();
+      return "";
     }
 
     // Prepare PNG base64 (without prefix) from an <img> element.
     async function preparePngBase64FromImgEl(imgEl) {
-      if (!imgEl) throw new Error('Ảnh không tồn tại');
-      const src = imgEl.src || imgEl.getAttribute('src') || '';
-      if (!src) throw new Error('Ảnh không có src');
+      if (!imgEl) throw new Error("Ảnh không tồn tại");
+      const src = imgEl.src || imgEl.getAttribute("src") || "";
+      if (!src) throw new Error("Ảnh không có src");
 
       // data URI
-      if (src.startsWith('data:')) {
+      if (src.startsWith("data:")) {
         const parsed = extractDataUri(src);
-        if (!parsed) throw new Error('Không parse được data URI');
-        const mime = parsed.mime || '';
-        const rawData = parsed.data || '';
-        console.log('[captcha-solver] data URI mime=', mime, ' base64 len=', rawData.length);
+        if (!parsed) throw new Error("Không parse được data URI");
+        const mime = parsed.mime || "";
+        const rawData = parsed.data || "";
+        console.log(
+          "[captcha-solver] data URI mime=",
+          mime,
+          " base64 len=",
+          rawData.length
+        );
 
-        if (mime === 'image/svg+xml' || mime === 'image/svg') {
+        if (mime === "image/svg+xml" || mime === "image/svg") {
           // decode base64 to SVG text and render via blob URL
           try {
-            const svgText = parsed.isBase64 ? atob(rawData) : decodeURIComponent(rawData);
-            console.log('[captcha-solver] SVG text sample:', svgText.slice(0, 300));
-            const blob = textToBlob(svgText, 'image/svg+xml;charset=utf-8');
+            const svgText = parsed.isBase64
+              ? atob(rawData)
+              : decodeURIComponent(rawData);
+            console.log(
+              "[captcha-solver] SVG text sample:",
+              svgText.slice(0, 300)
+            );
+            const blob = textToBlob(svgText, "image/svg+xml;charset=utf-8");
             const url = URL.createObjectURL(blob);
             try {
               const pngB64 = await imageSrcToPngBase64FromObjectUrl(url);
-              console.log('[captcha-solver] converted PNG base64 len from SVG:', pngB64.length);
+              console.log(
+                "[captcha-solver] converted PNG base64 len from SVG:",
+                pngB64.length
+              );
               return pngB64;
             } finally {
               URL.revokeObjectURL(url);
             }
           } catch (e) {
-            throw new Error('Không decode SVG data URI: ' + (e && e.message ? e.message : String(e)));
+            throw new Error(
+              "Không decode SVG data URI: " +
+                (e && e.message ? e.message : String(e))
+            );
           }
         } else {
           // raster data URI
-          const blob = base64ToBlob(rawData, mime || 'image/png');
+          const blob = base64ToBlob(rawData, mime || "image/png");
           const url = URL.createObjectURL(blob);
           try {
             const pngB64 = await imageSrcToPngBase64FromObjectUrl(url);
-            console.log('[captcha-solver] converted PNG base64 len from raster dataURI:', pngB64.length);
+            console.log(
+              "[captcha-solver] converted PNG base64 len from raster dataURI:",
+              pngB64.length
+            );
             return pngB64;
           } finally {
             URL.revokeObjectURL(url);
@@ -732,33 +754,50 @@ async function getApiKeyFromStorage() {
 
       // remote URL -> background fetch
       const resp = await fetchImageBase64ByBackground(src);
-      const mime = resp.mime || '';
-      const remoteB64 = resp.base64 || '';
-      console.log('[captcha-solver] background fetched mime=', mime, ' base64 len=', remoteB64.length);
-      if (!remoteB64) throw new Error('Background fetch trả về base64 rỗng');
+      const mime = resp.mime || "";
+      const remoteB64 = resp.base64 || "";
+      console.log(
+        "[captcha-solver] background fetched mime=",
+        mime,
+        " base64 len=",
+        remoteB64.length
+      );
+      if (!remoteB64) throw new Error("Background fetch trả về base64 rỗng");
 
-      if (mime === 'image/svg+xml' || mime === 'image/svg') {
+      if (mime === "image/svg+xml" || mime === "image/svg") {
         try {
           const svgText = atob(remoteB64);
-          console.log('[captcha-solver] remote SVG text sample:', svgText.slice(0, 300));
-          const blob = textToBlob(svgText, 'image/svg+xml;charset=utf-8');
+          console.log(
+            "[captcha-solver] remote SVG text sample:",
+            svgText.slice(0, 300)
+          );
+          const blob = textToBlob(svgText, "image/svg+xml;charset=utf-8");
           const url = URL.createObjectURL(blob);
           try {
             const pngB64 = await imageSrcToPngBase64FromObjectUrl(url);
-            console.log('[captcha-solver] converted PNG base64 len from remote SVG:', pngB64.length);
+            console.log(
+              "[captcha-solver] converted PNG base64 len from remote SVG:",
+              pngB64.length
+            );
             return pngB64;
           } finally {
             URL.revokeObjectURL(url);
           }
         } catch (e) {
-          throw new Error('Không decode remote SVG: ' + (e && e.message ? e.message : String(e)));
+          throw new Error(
+            "Không decode remote SVG: " +
+              (e && e.message ? e.message : String(e))
+          );
         }
       } else {
-        const blob = base64ToBlob(remoteB64, mime || 'image/png');
+        const blob = base64ToBlob(remoteB64, mime || "image/png");
         const url = URL.createObjectURL(blob);
         try {
           const pngB64 = await imageSrcToPngBase64FromObjectUrl(url);
-          console.log('[captcha-solver] converted PNG base64 len from remote raster:', pngB64.length);
+          console.log(
+            "[captcha-solver] converted PNG base64 len from remote raster:",
+            pngB64.length
+          );
           return pngB64;
         } finally {
           URL.revokeObjectURL(url);
@@ -770,36 +809,45 @@ async function getApiKeyFromStorage() {
     async function fillCaptchaInputRobust(value) {
       try {
         // 1) Attempt to find input in main document
-        let input = document.querySelector('#captcha-input');
+        let input = document.querySelector("#captcha-input");
 
         // 2) If not found, search near wrapper
         if (!input) {
-          console.warn('[captcha-solver] #captcha-input not found in document. Searching nearby wrapper...');
-          const wrapper = document.querySelector('.input-form-captcha-wrapper');
+          console.warn(
+            "[captcha-solver] #captcha-input not found in document. Searching nearby wrapper..."
+          );
+          const wrapper = document.querySelector(".input-form-captcha-wrapper");
           if (wrapper) {
             input = wrapper.querySelector('input[type="text"], input');
-            if (input) console.log('[captcha-solver] Found input near wrapper:', input);
+            if (input)
+              console.log("[captcha-solver] Found input near wrapper:", input);
           }
         }
 
         // 3) If still not found, search same-origin iframes for #captcha-input
         if (!input) {
-          const iframes = Array.from(document.querySelectorAll('iframe'));
+          const iframes = Array.from(document.querySelectorAll("iframe"));
           for (const f of iframes) {
             try {
               const doc = f.contentDocument || f.contentWindow?.document;
               if (!doc) continue;
-              const cand = doc.querySelector('#captcha-input');
+              const cand = doc.querySelector("#captcha-input");
               if (cand) {
                 input = cand;
-                console.log('[captcha-solver] Found #captcha-input inside same-origin iframe');
+                console.log(
+                  "[captcha-solver] Found #captcha-input inside same-origin iframe"
+                );
                 break;
               }
               // also search common inputs
-              const near = doc.querySelector('.input-form-captcha-wrapper input, input#captcha-input, input[type="text"]');
+              const near = doc.querySelector(
+                '.input-form-captcha-wrapper input, input#captcha-input, input[type="text"]'
+              );
               if (near) {
                 input = near;
-                console.log('[captcha-solver] Found input inside same-origin iframe (near wrapper).');
+                console.log(
+                  "[captcha-solver] Found input inside same-origin iframe (near wrapper)."
+                );
                 break;
               }
             } catch (e) {
@@ -810,14 +858,19 @@ async function getApiKeyFromStorage() {
 
         // 4) If still not found, search shadow roots (lightly) from known wrapper/component roots
         if (!input) {
-          const elements = Array.from(document.querySelectorAll('*'));
+          const elements = Array.from(document.querySelectorAll("*"));
           for (const el of elements) {
             if (el.shadowRoot) {
               try {
-                const cand = el.shadowRoot.querySelector('#captcha-input') || el.shadowRoot.querySelector('input');
+                const cand =
+                  el.shadowRoot.querySelector("#captcha-input") ||
+                  el.shadowRoot.querySelector("input");
                 if (cand) {
                   input = cand;
-                  console.log('[captcha-solver] Found input inside shadowRoot of', el);
+                  console.log(
+                    "[captcha-solver] Found input inside shadowRoot of",
+                    el
+                  );
                   break;
                 }
               } catch (e) {
@@ -828,8 +881,10 @@ async function getApiKeyFromStorage() {
         }
 
         if (!input) {
-          console.error('[captcha-solver] Cannot find #captcha-input on page (document/iframe/shadow).');
-          return { ok: false, err: 'NO_INPUT' };
+          console.error(
+            "[captcha-solver] Cannot find #captcha-input on page (document/iframe/shadow)."
+          );
+          return { ok: false, err: "NO_INPUT" };
         }
 
         // Temporarily enable if disabled/readOnly
@@ -842,8 +897,12 @@ async function getApiKeyFromStorage() {
         const setNativeValue = (el, val) => {
           try {
             const proto = Object.getPrototypeOf(el);
-            const desc = Object.getOwnPropertyDescriptor(proto, 'value') ||
-                         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+            const desc =
+              Object.getOwnPropertyDescriptor(proto, "value") ||
+              Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                "value"
+              );
             if (desc && desc.set) {
               desc.set.call(el, val);
             } else {
@@ -855,10 +914,21 @@ async function getApiKeyFromStorage() {
         };
 
         setNativeValue(input, value);
-        input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        input.dispatchEvent(
+          new Event("input", { bubbles: true, composed: true })
+        );
+        input.dispatchEvent(
+          new Event("change", { bubbles: true, composed: true })
+        );
         try {
-          input.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: value, inputType: 'insertFromPaste' }));
+          input.dispatchEvent(
+            new InputEvent("input", {
+              bubbles: true,
+              composed: true,
+              data: value,
+              inputType: "insertFromPaste",
+            })
+          );
         } catch (e) {
           // ignore if not supported
         }
@@ -866,25 +936,41 @@ async function getApiKeyFromStorage() {
         // React internal tracker trick (older versions)
         try {
           const tracker = input._valueTracker;
-          if (tracker && typeof tracker.setValue === 'function') tracker.setValue(value);
-        } catch (e) { /* ignore */ }
+          if (tracker && typeof tracker.setValue === "function")
+            tracker.setValue(value);
+        } catch (e) {
+          /* ignore */
+        }
 
         // If the value still doesn't match (framework overriding), simulate typing
         if (String(input.value) !== String(value)) {
-          setNativeValue(input, '');
-          input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+          setNativeValue(input, "");
+          input.dispatchEvent(
+            new Event("input", { bubbles: true, composed: true })
+          );
           for (let i = 0; i < value.length; i++) {
             const ch = value[i];
             setNativeValue(input, input.value + ch);
             try {
-              input.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: ch, inputType: 'insertText' }));
+              input.dispatchEvent(
+                new InputEvent("input", {
+                  bubbles: true,
+                  composed: true,
+                  data: ch,
+                  inputType: "insertText",
+                })
+              );
             } catch (e) {
-              input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+              input.dispatchEvent(
+                new Event("input", { bubbles: true, composed: true })
+              );
             }
             // small delay (fast)
-            await new Promise(r => setTimeout(r, 20));
+            await new Promise((r) => setTimeout(r, 20));
           }
-          input.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+          input.dispatchEvent(
+            new Event("change", { bubbles: true, composed: true })
+          );
         }
 
         try {
@@ -899,26 +985,39 @@ async function getApiKeyFromStorage() {
         if (prevDisabled) input.disabled = prevDisabled;
         if (prevReadOnly) input.readOnly = prevReadOnly;
 
-        console.log('[captcha-solver] Filled input:', input, 'value now=', input.value);
+        console.log(
+          "[captcha-solver] Filled input:",
+          input,
+          "value now=",
+          input.value
+        );
         return { ok: true, value: input.value };
       } catch (err) {
-        console.error('[captcha-solver] fillCaptchaInputRobust error:', err);
-        return { ok: false, err: err && err.message ? err.message : String(err) };
+        console.error("[captcha-solver] fillCaptchaInputRobust error:", err);
+        return {
+          ok: false,
+          err: err && err.message ? err.message : String(err),
+        };
       }
     }
 
     // Inject script into page to set value using page's native prototype (for React reliability)
     function injectSetValueInPage(selector, value) {
       try {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
+        const script = document.createElement("script");
+        script.type = "text/javascript";
         // escape backticks and backslashes
-        const escaped = String(value).replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        const escaped = String(value)
+          .replace(/\\/g, "\\\\")
+          .replace(/`/g, "\\`")
+          .replace(/\$/g, "\\$");
         script.textContent = `
           (function(){
             try {
               const el = document.querySelector(${JSON.stringify(selector)});
-              if(!el) { console.warn('[captcha-solver][injected] No element for selector', ${JSON.stringify(selector)}); return; }
+              if(!el) { console.warn('[captcha-solver][injected] No element for selector', ${JSON.stringify(
+                selector
+              )}); return; }
               const desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
               if(desc && desc.set) {
                 desc.set.call(el, \`${escaped}\`);
@@ -928,7 +1027,9 @@ async function getApiKeyFromStorage() {
               el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
               el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
               try { el.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: \`${escaped}\`, inputType: 'insertFromPaste' })); } catch(e){}
-              console.log('[captcha-solver][injected] set value via page context for selector', ${JSON.stringify(selector)});
+              console.log('[captcha-solver][injected] set value via page context for selector', ${JSON.stringify(
+                selector
+              )});
             } catch(e) { console.error('[captcha-solver][injected] error', e); }
           })();
         `;
@@ -936,7 +1037,7 @@ async function getApiKeyFromStorage() {
         setTimeout(() => script.remove(), 60);
         return true;
       } catch (e) {
-        console.error('[captcha-solver] injectSetValueInPage error:', e);
+        console.error("[captcha-solver] injectSetValueInPage error:", e);
         return false;
       }
     }
@@ -948,13 +1049,13 @@ async function getApiKeyFromStorage() {
         return true;
       } catch (e) {
         try {
-          const ta = document.createElement('textarea');
+          const ta = document.createElement("textarea");
           ta.value = text;
-          ta.style.position = 'fixed';
-          ta.style.left = '-9999px';
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
           document.body.appendChild(ta);
           ta.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(ta);
           return true;
         } catch (err) {
@@ -965,37 +1066,55 @@ async function getApiKeyFromStorage() {
 
     // Create quick button and attach handler
     function createButton() {
-      const wrapper = document.querySelector('.input-form-captcha-wrapper') || document.querySelector('.box-captcha') || document.body;
+      const wrapper =
+        document.querySelector(".input-form-captcha-wrapper") ||
+        document.querySelector(".box-captcha") ||
+        document.body;
       if (!wrapper) return;
-      if (wrapper.querySelector('.captcha-solver-quick-btn')) return; // avoid duplicates
+      if (wrapper.querySelector(".captcha-solver-quick-btn")) return; // avoid duplicates
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'captcha-solver-quick-btn';
-      btn.textContent = 'Giải ngay';
-      btn.title = 'Giải CAPTCHA bằng API';
-      btn.style.cssText = 'margin-left:8px;padding:6px 8px;background:#ff6f00;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:13px;';
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "captcha-solver-quick-btn";
+      btn.textContent = "Giải ngay";
+      btn.title = "Giải CAPTCHA bằng API";
+      btn.style.cssText =
+        "margin-left:8px;padding:6px 8px;background:#ff6f00;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:13px;";
 
-      const thumb = wrapper.querySelector('.thumb-captcha') || wrapper.querySelector('#captcha-image') || null;
-      if (thumb && thumb.parentElement) thumb.parentElement.insertBefore(btn, thumb.nextSibling);
+      const thumb =
+        wrapper.querySelector(".thumb-captcha") ||
+        wrapper.querySelector("#captcha-image") ||
+        null;
+      if (thumb && thumb.parentElement)
+        thumb.parentElement.insertBefore(btn, thumb.nextSibling);
       else wrapper.appendChild(btn);
 
-      btn.addEventListener('click', async () => {
+      btn.addEventListener("click", async () => {
         btn.disabled = true;
         const prevText = btn.textContent;
         try {
-          btn.textContent = 'Đang...';
-          const imgEl = document.querySelector('#captcha-image');
-          if (!imgEl) throw new Error('Không tìm thấy #captcha-image trên trang');
-          const inputEl = document.querySelector('#captcha-input'); // just to check presence
-          if (!inputEl) console.warn('[captcha-solver] Warning: #captcha-input not found in main document (may be in iframe/shadow).');
+          btn.textContent = "Đang...";
+          const imgEl = document.querySelector("#captcha-image");
+          if (!imgEl)
+            throw new Error("Không tìm thấy #captcha-image trên trang");
+          const inputEl = document.querySelector("#captcha-input"); // just to check presence
+          if (!inputEl)
+            console.warn(
+              "[captcha-solver] Warning: #captcha-input not found in main document (may be in iframe/shadow)."
+            );
 
-          btn.textContent = 'Chuẩn bị ảnh...';
+          btn.textContent = "Chuẩn bị ảnh...";
           const pngBase64 = await preparePngBase64FromImgEl(imgEl);
-          if (!pngBase64) throw new Error('Không chuyển được ảnh sang PNG base64');
+          if (!pngBase64)
+            throw new Error("Không chuyển được ảnh sang PNG base64");
 
-          console.log('[captcha-solver] PNG base64 length=', pngBase64.length, 'sample=', pngBase64.slice(0, 50));
-          btn.textContent = 'Gọi API...';
+          console.log(
+            "[captcha-solver] PNG base64 length=",
+            pngBase64.length,
+            "sample=",
+            pngBase64.slice(0, 50)
+          );
+          btn.textContent = "Gọi API...";
 
           const apikey = await getApiKeyFromStorage();
           const payload = { apikey, type: 14, img: pngBase64 };
@@ -1004,61 +1123,93 @@ async function getApiKeyFromStorage() {
           let res, raw;
           try {
             res = await fetch(API_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
             });
-            raw = await res.text().catch(() => '');
+            raw = await res.text().catch(() => "");
           } catch (e) {
-            throw new Error('Không gửi được API: ' + (e && e.message ? e.message : String(e)));
+            throw new Error(
+              "Không gửi được API: " + (e && e.message ? e.message : String(e))
+            );
           }
 
           let json;
-          try { json = JSON.parse(raw); } catch (e) { json = raw; }
-          console.log('[captcha-solver] API HTTP status=', res?.status, ' raw=', raw, ' parsed=', json);
+          try {
+            json = JSON.parse(raw);
+          } catch (e) {
+            json = raw;
+          }
+          console.log(
+            "[captcha-solver] API HTTP status=",
+            res?.status,
+            " raw=",
+            raw,
+            " parsed=",
+            json
+          );
 
           if (!res.ok) {
-            throw new Error('API lỗi HTTP ' + res.status + ' ' + raw);
+            throw new Error("API lỗi HTTP " + res.status + " " + raw);
           }
 
           const solved = parseApiResponse(json);
           if (!solved) {
-            console.warn('[captcha-solver] API trả nhưng không tìm thấy kết quả trong JSON:', json);
-            btn.textContent = 'Không đọc được';
-            btn.title = 'API trả nhưng không có kết quả. Xem console.';
+            console.warn(
+              "[captcha-solver] API trả nhưng không tìm thấy kết quả trong JSON:",
+              json
+            );
+            btn.textContent = "Không đọc được";
+            btn.title = "API trả nhưng không có kết quả. Xem console.";
             return;
           }
 
           // 1) Try content-script fill
-          btn.textContent = 'Điền...';
+          btn.textContent = "Điền...";
           const fillResult = await fillCaptchaInputRobust(solved);
           if (fillResult.ok) {
-            console.log('[captcha-solver] fillCaptchaInputRobust OK', fillResult.value);
-            btn.textContent = 'Xong';
-            btn.title = 'Xong: ' + fillResult.value;
+            console.log(
+              "[captcha-solver] fillCaptchaInputRobust OK",
+              fillResult.value
+            );
+            btn.textContent = "Xong";
+            btn.title = "Xong: " + fillResult.value;
             return;
           }
 
           // 2) Try injecting native setter into page context (more reliable for React)
-          const injected = injectSetValueInPage('#captcha-input', solved);
+          const injected = injectSetValueInPage("#captcha-input", solved);
           if (injected) {
-            await new Promise(r => setTimeout(r, 120));
-            const pageInput = document.querySelector('#captcha-input');
+            await new Promise((r) => setTimeout(r, 120));
+            const pageInput = document.querySelector("#captcha-input");
             if (pageInput && String(pageInput.value) === String(solved)) {
-              console.log('[captcha-solver] injected setter succeeded, value now=', pageInput.value);
-              btn.textContent = 'Xong';
-              btn.title = 'Xong: ' + pageInput.value;
+              console.log(
+                "[captcha-solver] injected setter succeeded, value now=",
+                pageInput.value
+              );
+              btn.textContent = "Xong";
+              btn.title = "Xong: " + pageInput.value;
               return;
             }
-            const wrapperEl = document.querySelector('.input-form-captcha-wrapper');
+            const wrapperEl = document.querySelector(
+              ".input-form-captcha-wrapper"
+            );
             if (wrapperEl) {
-              const injected2 = injectSetValueInPage('.input-form-captcha-wrapper input#captcha-input, .input-form-captcha-wrapper input', solved);
-              if (injected2) await new Promise(r=>setTimeout(r,120));
-              const maybe = wrapperEl.querySelector('input#captcha-input, input');
+              const injected2 = injectSetValueInPage(
+                ".input-form-captcha-wrapper input#captcha-input, .input-form-captcha-wrapper input",
+                solved
+              );
+              if (injected2) await new Promise((r) => setTimeout(r, 120));
+              const maybe = wrapperEl.querySelector(
+                "input#captcha-input, input"
+              );
               if (maybe && String(maybe.value) === String(solved)) {
-                console.log('[captcha-solver] injected setter succeeded for wrapper input', maybe);
-                btn.textContent = 'Xong';
-                btn.title = 'Xong: ' + maybe.value;
+                console.log(
+                  "[captcha-solver] injected setter succeeded for wrapper input",
+                  maybe
+                );
+                btn.textContent = "Xong";
+                btn.title = "Xong: " + maybe.value;
                 return;
               }
             }
@@ -1066,28 +1217,42 @@ async function getApiKeyFromStorage() {
 
           // 3) As fallback: set directly and copy to clipboard to help manual paste
           try {
-            const directInput = document.querySelector('#captcha-input') || (document.querySelector('.input-form-captcha-wrapper') && document.querySelector('.input-form-captcha-wrapper input'));
+            const directInput =
+              document.querySelector("#captcha-input") ||
+              (document.querySelector(".input-form-captcha-wrapper") &&
+                document.querySelector(".input-form-captcha-wrapper input"));
             if (directInput) {
-              try { directInput.focus(); } catch(e){}
-              try { directInput.value = solved; } catch(e){}
-              directInput.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-              directInput.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+              try {
+                directInput.focus();
+              } catch (e) {}
+              try {
+                directInput.value = solved;
+              } catch (e) {}
+              directInput.dispatchEvent(
+                new Event("input", { bubbles: true, composed: true })
+              );
+              directInput.dispatchEvent(
+                new Event("change", { bubbles: true, composed: true })
+              );
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
 
           await copyToClipboard(solved);
-          btn.textContent = 'Đã giải (sao chép)';
-          btn.title = 'Mã đã sao chép: dán vào ô captcha nếu không tự điền';
-          console.log('[captcha-solver] Solved (copied):', solved);
-
+          btn.textContent = "Đã giải (sao chép)";
+          btn.title = "Mã đã sao chép: dán vào ô captcha nếu không tự điền";
+          console.log("[captcha-solver] Solved (copied):", solved);
         } catch (err) {
-          console.error('[captcha-solver] Lỗi:', err);
-          btn.textContent = 'Lỗi';
+          console.error("[captcha-solver] Lỗi:", err);
+          btn.textContent = "Lỗi";
           btn.title = String(err && err.message ? err.message : err);
         } finally {
           setTimeout(() => {
             btn.disabled = false;
-            try { btn.textContent = prevText; } catch (e) {}
+            try {
+              btn.textContent = prevText;
+            } catch (e) {}
           }, 1400);
         }
       });
@@ -1105,24 +1270,23 @@ async function getApiKeyFromStorage() {
     window.__captchaSolverHelpers = {
       preparePngBase64FromImgEl,
       fillCaptchaInputRobust,
-      parseApiResponse
+      parseApiResponse,
     };
   })();
 }
 
-
 // Cập nhật: thêm nút "x" đóng và lưu trạng thái đóng vào localStorage
 // Phiên bản: không dùng localStorage. Nhấn "×" chỉ remove element, không lưu trạng thái.
 (function () {
-  const bubble = document.createElement('div');
-  bubble.className = 'ext-bubble';
+  const bubble = document.createElement("div");
+  bubble.className = "ext-bubble";
   bubble.innerHTML = `
     <div class="ext-bubble-main">☰</div>
     <div class="ext-bubble-menu"></div>
   `;
   document.body.appendChild(bubble);
 
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     .ext-bubble {
       position: fixed !important;
@@ -1230,12 +1394,12 @@ async function getApiKeyFromStorage() {
   document.head.appendChild(style);
 
   const htmlGroups = [
-    ` <center>Domibet - Trung Tâm Tài Khoản </center>
+    ` <center>nextgen - Trung Tâm Tài Khoản </center>
       <div class="group-box">
         <button data-action="naptien">Nạp Tiền</button>
         <button data-action="ruttien">Rút Tiền</button>
         <button data-action="khuyenmai">Khuyến Mại</button>
-        <button data-action="domino">Domino</button>
+        <button data-action="nextgen">nextgen</button>
 
         <button data-action="hopthu">Hộp Thư</button>
         <button data-action="lichsucuoc">LS Cược</button>
@@ -1287,12 +1451,12 @@ async function getApiKeyFromStorage() {
         <button data-action="gw78w">GW78W</button>
       </div>
     `,
-    `<center>Domibet - Trung Tâm Tài Khoản </center>
+    `<center>nextgen - Trung Tâm Tài Khoản </center>
       <div class="group-box">
         <button data-action="naptien">Nạp Tiền</button>
         <button data-action="ruttien">Rút Tiền</button>
         <button data-action="khuyenmai">Khuyến Mại</button>
-        <button data-action="domino">Domino</button>
+        <button data-action="nextgen">nextgen</button>
 
         <button data-action="hopthu">Hộp Thư</button>
         <button data-action="lichsucuoc">LS Cược</button>
@@ -1339,12 +1503,12 @@ async function getApiKeyFromStorage() {
         <button data-action="jun1r88">Jun1(R88)</button>
         <button data-action="gw78w">GW78W</button>
       </div>
-    `
+    `,
   ];
 
   let currentGroup = 0;
-  const menu = bubble.querySelector('.ext-bubble-menu');
-  const main = bubble.querySelector('.ext-bubble-main');
+  const menu = bubble.querySelector(".ext-bubble-menu");
+  const main = bubble.querySelector(".ext-bubble-main");
 
   function renderMenu(index) {
     menu.innerHTML = `
@@ -1356,81 +1520,207 @@ async function getApiKeyFromStorage() {
   }
 
   function attachButtonEvents(container) {
-    const buttons = container.querySelectorAll('.ext-content button');
+    const buttons = container.querySelectorAll(".ext-content button");
     const base = window.location.origin;
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
         const action = btn.dataset.action;
         switch (action) {
-          case 'naptien': window.location.href = `${base}/Financial?type=deposit`; break;
-          case 'ruttien': window.location.href = `${base}/Financial?tab=2`; break;
-          case 'khuyenmai': window.location.href = `${base}/Promotion`; break;
-          case 'domino': alert('Sản phẩm của Domino , tham gia nhóm @casino8386'); break;
-          case 'hopthu': window.location.href = `${base}/SiteMail`; break;
-          case 'lichsucuoc': window.location.href = `${base}/BetRecord`; break;
-          case 'lichsugiaodich': window.location.href = `${base}/Transaction`; break;
-          case 'hoantra': window.location.href = `${base}/Discount`; break;
-          case 'ctkmhi88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
-          case 'ctkmnew88': window.open(`https://tangqua88.com/?promo_id=ND188`, '_blank'); break;
-          case 'ctkmf8bet': window.open(`https://ttkm-f8bet01.pages.dev/?promo_id=ND188`, '_blank'); break;
-          case 'ctkmmb66': window.open(`https://ttkm-mb66okvip02.pages.dev`, '_blank'); break;
-          case 'ctkm789bet': window.open(`https://ttkm789bet04.pages.dev`, '_blank'); break;
-          case 'ctkmshbet': window.open(`https://khuyenmai-shbet01.pages.dev//?promo_id=SH188`, '_blank'); break;
-          case 'ctkmjun88': window.open(`https://trungtam.khuyenmaijun881.win/?promo_id=ND188`, '_blank'); break;
-          case 'ctkm78win': window.open(`https://1wmzoj2fqkqiysmxy8fdyk7sghnkmxqygemyctdo3kyrfmuqjzashg2.daily78win.net`, '_blank'); break;
-          case 'ctkmqq88': window.open(`https://khuyenmai-qq88.pages.dev/?promo_id=TN188`, '_blank'); break;
-          case 'ctkmrr88': window.open(`https://rr88ttkm.com`, '_blank'); break;
-          case 'ctkmgk88': window.open(`https://khuyenmai-gk88.pages.dev`, '_blank'); break;
-          case 'txr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3794&cId=2`, '_blank'); break;
-          case 'dgcasino': window.open(`${base}/Account/LoginToSupplier?SupplierType=DG`, '_blank'); break;
-          case 'aesexy': window.open(`${base}/Account/LoginToSupplier?supplierType=SE&gId=4020`, '_blank'); break;
-          case 'cuonpp': window.open(`${base}/Account/LoginToSupplier?supplierType=15&gId=2439&cId=1`, '_blank'); break;
-          case 'tpv3': window.open(`${base}/Account/LoginToSupplier?supplierType=110&gId=7469&cId=20`, '_blank'); break;
-          case 'longthanjili': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=3271&cId=1`, '_blank'); break;
-          case 'taydu': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=4874&cId=21`, '_blank'); break;
-          case 'ngokhong': window.open(`${base}/Account/LoginToSupplier?supplierType=102&gId=3416&cId=2`, '_blank'); break;
-          case 'ttcat': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=2905&cId=2`, '_blank'); break;
-          case 'ttban': window.open(`${base}/Account/LoginToSupplier?supplierType=97&gId=1522&cId=2`, '_blank'); break;
-          case 'khunglong': window.open(`${base}/Account/LoginToSupplier?supplierType=101&gId=5212&cId=1`, '_blank'); break;
-          case 'xsvr': window.open(`${base}/Account/LoginToSupplier?SupplierType=VR`, '_blank'); break;
-          case 'senr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3780&cId=21`, '_blank'); break;
-          case 'sieutocr88': window.open(`${base}/Account/LoginToSupplier?supplierType=104&gId=3786&cId=21`, '_blank'); break;
-          case 'jun1r88': window.open(`${base}/gamelobby/chess`, '_blank'); break;
-          case 'gw78w': window.open(`${base}/gamelobby/lottery`, '_blank'); break;
-          default: console.log('Không có hành động cho:', action);
+          case "naptien":
+            window.location.href = `${base}/Financial?type=deposit`;
+            break;
+          case "ruttien":
+            window.location.href = `${base}/Financial?tab=2`;
+            break;
+          case "khuyenmai":
+            window.location.href = `${base}/Promotion`;
+            break;
+          case "nextgen":
+            alert("Sản phẩm của nextgen , tham gia nhóm @nextgen");
+            break;
+          case "hopthu":
+            window.location.href = `${base}/SiteMail`;
+            break;
+          case "lichsucuoc":
+            window.location.href = `${base}/BetRecord`;
+            break;
+          case "lichsugiaodich":
+            window.location.href = `${base}/Transaction`;
+            break;
+          case "hoantra":
+            window.location.href = `${base}/Discount`;
+            break;
+          case "ctkmhi88":
+            window.open(`https://tangqua88.com/?promo_id=ND188`, "_blank");
+            break;
+          case "ctkmnew88":
+            window.open(`https://tangqua88.com/?promo_id=ND188`, "_blank");
+            break;
+          case "ctkmf8bet":
+            window.open(
+              `https://ttkm-f8bet01.pages.dev/?promo_id=ND188`,
+              "_blank"
+            );
+            break;
+          case "ctkmmb66":
+            window.open(`https://ttkm-mb66okvip02.pages.dev`, "_blank");
+            break;
+          case "ctkm789bet":
+            window.open(`https://ttkm789bet04.pages.dev`, "_blank");
+            break;
+          case "ctkmshbet":
+            window.open(
+              `https://khuyenmai-shbet01.pages.dev//?promo_id=SH188`,
+              "_blank"
+            );
+            break;
+          case "ctkmjun88":
+            window.open(
+              `https://trungtam.khuyenmaijun881.win/?promo_id=ND188`,
+              "_blank"
+            );
+            break;
+          case "ctkm78win":
+            window.open(
+              `https://1wmzoj2fqkqiysmxy8fdyk7sghnkmxqygemyctdo3kyrfmuqjzashg2.daily78win.net`,
+              "_blank"
+            );
+            break;
+          case "ctkmqq88":
+            window.open(
+              `https://khuyenmai-qq88.pages.dev/?promo_id=TN188`,
+              "_blank"
+            );
+            break;
+          case "ctkmrr88":
+            window.open(`https://rr88ttkm.com`, "_blank");
+            break;
+          case "ctkmgk88":
+            window.open(`https://khuyenmai-gk88.pages.dev`, "_blank");
+            break;
+          case "txr88":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=104&gId=3794&cId=2`,
+              "_blank"
+            );
+            break;
+          case "dgcasino":
+            window.open(
+              `${base}/Account/LoginToSupplier?SupplierType=DG`,
+              "_blank"
+            );
+            break;
+          case "aesexy":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=SE&gId=4020`,
+              "_blank"
+            );
+            break;
+          case "cuonpp":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=15&gId=2439&cId=1`,
+              "_blank"
+            );
+            break;
+          case "tpv3":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=110&gId=7469&cId=20`,
+              "_blank"
+            );
+            break;
+          case "longthanjili":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=101&gId=3271&cId=1`,
+              "_blank"
+            );
+            break;
+          case "taydu":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=97&gId=4874&cId=21`,
+              "_blank"
+            );
+            break;
+          case "ngokhong":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=102&gId=3416&cId=2`,
+              "_blank"
+            );
+            break;
+          case "ttcat":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=97&gId=2905&cId=2`,
+              "_blank"
+            );
+            break;
+          case "ttban":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=97&gId=1522&cId=2`,
+              "_blank"
+            );
+            break;
+          case "khunglong":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=101&gId=5212&cId=1`,
+              "_blank"
+            );
+            break;
+          case "xsvr":
+            window.open(
+              `${base}/Account/LoginToSupplier?SupplierType=VR`,
+              "_blank"
+            );
+            break;
+          case "senr88":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=104&gId=3780&cId=21`,
+              "_blank"
+            );
+            break;
+          case "sieutocr88":
+            window.open(
+              `${base}/Account/LoginToSupplier?supplierType=104&gId=3786&cId=21`,
+              "_blank"
+            );
+            break;
+          case "jun1r88":
+            window.open(`${base}/gamelobby/chess`, "_blank");
+            break;
+          case "gw78w":
+            window.open(`${base}/gamelobby/lottery`, "_blank");
+            break;
+          default:
+            console.log("Không có hành động cho:", action);
         }
       });
     });
   }
 
   function attachCloseEvent(container) {
-    const closeBtn = container.querySelector('.ext-close');
+    const closeBtn = container.querySelector(".ext-close");
     if (!closeBtn) return;
-    closeBtn.addEventListener('click', () => {
+    closeBtn.addEventListener("click", () => {
       // KHÔNG lưu localStorage — chỉ remove element
       bubble.remove();
     });
   }
 
-  main.addEventListener('click', () => {
-    if (bubble.classList.contains('show')) {
-      bubble.classList.remove('show');
+  main.addEventListener("click", () => {
+    if (bubble.classList.contains("show")) {
+      bubble.classList.remove("show");
       currentGroup = (currentGroup + 1) % htmlGroups.length;
       renderMenu(currentGroup);
     } else {
       renderMenu(currentGroup);
-      bubble.classList.add('show');
+      bubble.classList.add("show");
     }
   });
 
   renderMenu(currentGroup);
 })();
 
-
-
 // Phần nh tk KM
 (function () {
-  console.log('[bulk-filler] start');
+  console.log("[bulk-filler] start");
 
   const css = `
   /* 🎨 Wrapper bố cục nút và input */
@@ -1498,54 +1788,75 @@ async function getApiKeyFromStorage() {
   `;
 
   // Inject CSS
- 
 
   function injectCSS() {
-    if (document.head.querySelector('#bulk-fill-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'bulk-fill-styles';
+    if (document.head.querySelector("#bulk-fill-styles")) return;
+    const style = document.createElement("style");
+    style.id = "bulk-fill-styles";
     style.textContent = css;
     document.head.appendChild(style);
-    console.log('[bulk-filler] CSS injected');
+    console.log("[bulk-filler] CSS injected");
   }
 
   // --- storage read ---
   function getBulk() {
     return new Promise((resolve) => {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get(['bulkInputCreateData'], (res) => {
-          resolve(res && res.bulkInputCreateData ? res.bulkInputCreateData : null);
+      if (
+        typeof chrome !== "undefined" &&
+        chrome.storage &&
+        chrome.storage.local
+      ) {
+        chrome.storage.local.get(["bulkInputCreateData"], (res) => {
+          resolve(
+            res && res.bulkInputCreateData ? res.bulkInputCreateData : null
+          );
         });
       } else {
-        resolve(window.localStorage.getItem('bulkInputCreateData'));
+        resolve(window.localStorage.getItem("bulkInputCreateData"));
       }
     });
   }
 
   // --- selectors ---
   function findAccountInputs() {
-    const byPlaceholder = Array.from(document.querySelectorAll('input[placeholder="Nhập tên tài khoản"]'));
-    const byExactPlaceholderTrim = Array.from(document.querySelectorAll('input')).filter(i => (i.getAttribute('placeholder')||'').trim() === 'Nhập tên tài khoản');
-    const byId = Array.from(document.querySelectorAll('#account'));
-    const byClass = Array.from(document.querySelectorAll('input.background-input-select.notranslate'));
-    const combined = Array.from(new Set([...byPlaceholder, ...byExactPlaceholderTrim, ...byId, ...byClass]));
+    const byPlaceholder = Array.from(
+      document.querySelectorAll('input[placeholder="Nhập tên tài khoản"]')
+    );
+    const byExactPlaceholderTrim = Array.from(
+      document.querySelectorAll("input")
+    ).filter(
+      (i) =>
+        (i.getAttribute("placeholder") || "").trim() === "Nhập tên tài khoản"
+    );
+    const byId = Array.from(document.querySelectorAll("#account"));
+    const byClass = Array.from(
+      document.querySelectorAll("input.background-input-select.notranslate")
+    );
+    const combined = Array.from(
+      new Set([
+        ...byPlaceholder,
+        ...byExactPlaceholderTrim,
+        ...byId,
+        ...byClass,
+      ])
+    );
     return combined;
   }
 
   // --- insert button ---
   function createButton(accountValue) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'bulk-fill-btn';
-    btn.textContent = 'Nhập';
-    btn.addEventListener('click', (e) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "bulk-fill-btn";
+    btn.textContent = "Nhập";
+    btn.addEventListener("click", (e) => {
       const input = btn.__targetInput;
       if (!input) return;
       input.focus();
       input.value = accountValue;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      console.log('[bulk-filler] filled', accountValue, '->', input);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      console.log("[bulk-filler] filled", accountValue, "->", input);
     });
     return btn;
   }
@@ -1554,10 +1865,10 @@ async function getApiKeyFromStorage() {
     if (!input || input.dataset.bulkBtn) return;
     // Try to wrap input and button into a wrapper for neat layout
     try {
-      const wrapper = document.createElement('span');
-      wrapper.className = 'bulk-fill-wrapper';
+      const wrapper = document.createElement("span");
+      wrapper.className = "bulk-fill-wrapper";
       // preserve inline display context by copying display of input's parent if possible
-      wrapper.style.display = 'inline-flex';
+      wrapper.style.display = "inline-flex";
       // replace input with wrapper, then append input and button
       const parent = input.parentElement;
       if (parent) {
@@ -1570,18 +1881,20 @@ async function getApiKeyFromStorage() {
         // adjust button height to match input if input has offsetHeight
         const h = input.offsetHeight;
         if (h && h > 0) {
-          
           // if too small, apply small class
-          if (h < 32) btn.classList.add('small');
+          if (h < 32) btn.classList.add("small");
         }
 
         wrapper.appendChild(btn);
-        input.dataset.bulkBtn = '1';
-        console.log('[bulk-filler] wrapped input and inserted button', input);
+        input.dataset.bulkBtn = "1";
+        console.log("[bulk-filler] wrapped input and inserted button", input);
         return;
       }
     } catch (err) {
-      console.warn('[bulk-filler] wrapper insert failed, fallback to afterend:', err);
+      console.warn(
+        "[bulk-filler] wrapper insert failed, fallback to afterend:",
+        err
+      );
     }
 
     // Fallback: insert button after input
@@ -1591,17 +1904,16 @@ async function getApiKeyFromStorage() {
       // set height to match if available
       const h2 = input.offsetHeight;
       if (h2 && h2 > 0) {
-        
-        if (h2 < 32) btn.classList.add('small');
+        if (h2 < 32) btn.classList.add("small");
       } else {
         // default small
-        btn.classList.add('small');
+        btn.classList.add("small");
       }
-      input.insertAdjacentElement('afterend', btn);
-      input.dataset.bulkBtn = '1';
-      console.log('[bulk-filler] inserted button after input', input);
+      input.insertAdjacentElement("afterend", btn);
+      input.dataset.bulkBtn = "1";
+      console.log("[bulk-filler] inserted button after input", input);
     } catch (err) {
-      console.error('[bulk-filler] cannot insert button for input', input, err);
+      console.error("[bulk-filler] cannot insert button for input", input, err);
     }
   }
 
@@ -1610,24 +1922,26 @@ async function getApiKeyFromStorage() {
     injectCSS();
 
     const raw = await getBulk();
-    console.log('[bulk-filler] raw bulk:', raw);
+    console.log("[bulk-filler] raw bulk:", raw);
     if (!raw) {
-      console.warn('[bulk-filler] bulkInputCreateData not found');
+      console.warn("[bulk-filler] bulkInputCreateData not found");
       return;
     }
-    const parts = String(raw).split('|').map(s => s.trim());
-    console.log('[bulk-filler] parts:', parts);
-    const accountValue = parts[4] || '';
+    const parts = String(raw)
+      .split("|")
+      .map((s) => s.trim());
+    console.log("[bulk-filler] parts:", parts);
+    const accountValue = parts[4] || "";
     if (!accountValue) {
-      console.warn('[bulk-filler] no account value at index 4');
+      console.warn("[bulk-filler] no account value at index 4");
       return;
     }
 
     function tryInsertNow() {
       const inputs = findAccountInputs();
-      console.log('[bulk-filler] found inputs:', inputs.length);
+      console.log("[bulk-filler] found inputs:", inputs.length);
       if (inputs.length === 0) return false;
-      inputs.forEach(i => insertButtonNextToInput(i, accountValue));
+      inputs.forEach((i) => insertButtonNextToInput(i, accountValue));
       return true;
     }
 
@@ -1636,12 +1950,18 @@ async function getApiKeyFromStorage() {
       const obs = new MutationObserver((mutations, observer) => {
         if (tryInsertNow()) {
           observer.disconnect();
-          console.log('[bulk-filler] inserted and observer disconnected');
+          console.log("[bulk-filler] inserted and observer disconnected");
         }
       });
-      obs.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      obs.observe(document.documentElement || document.body, {
+        childList: true,
+        subtree: true,
+      });
       setTimeout(() => {
-        try { obs.disconnect(); console.log('[bulk-filler] observer timed out'); } catch {}
+        try {
+          obs.disconnect();
+          console.log("[bulk-filler] observer timed out");
+        } catch {}
       }, 30000);
     }
   }
@@ -1650,19 +1970,11 @@ async function getApiKeyFromStorage() {
   init();
 })();
 
-
-
-
-
-
-
-
-
 // 🫧 Bong bóng 2 - không xung đột
 /// 🫧 Bong bóng 2 (nhân bản, không xung đột)
 (function () {
-  const bubble2 = document.createElement('div');
-  bubble2.className = 'ext-bubble2';
+  const bubble2 = document.createElement("div");
+  bubble2.className = "ext-bubble2";
   bubble2.innerHTML = `
     <div class="ext-bubble2-main">⚙️</div>
     <div class="ext-bubble2-menu"></div>
@@ -1670,7 +1982,7 @@ async function getApiKeyFromStorage() {
   document.body.appendChild(bubble2);
 
   // 🎨 CSS riêng biệt
-  const style2 = document.createElement('style');
+  const style2 = document.createElement("style");
   style2.textContent = `
     .ext-bubble2 {
       position: fixed !important;
@@ -1768,12 +2080,12 @@ async function getApiKeyFromStorage() {
         <button data-action="news">Tin Tức</button>
         <button data-action="event">Sự Kiện</button>
       </div>
-    `
+    `,
   ];
 
   let currentGroup2 = 0;
-  const menu2 = bubble2.querySelector('.ext-bubble2-menu');
-  const main2 = bubble2.querySelector('.ext-bubble2-main');
+  const menu2 = bubble2.querySelector(".ext-bubble2-menu");
+  const main2 = bubble2.querySelector(".ext-bubble2-main");
 
   function renderMenu2(index) {
     menu2.innerHTML = htmlGroups2[index];
@@ -1782,44 +2094,63 @@ async function getApiKeyFromStorage() {
 
   // 🧭 Xử lý click
   function attachButtonEvents2(container) {
-    const buttons = container.querySelectorAll('button');
+    const buttons = container.querySelectorAll("button");
     const base = window.location.origin;
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
         const action = btn.dataset.action;
         switch (action) {
-          case 'tele': window.open('https://t.me/casino8386', '_blank'); break;
-          case 'zalo': window.open('https://zalo.me', '_blank'); break;
-          case 'facebook': window.open('https://facebook.com', '_blank'); break;
-          case 'guide': alert('Tài liệu hướng dẫn đang được cập nhật!'); break;
-          case 'report': alert('Vui lòng liên hệ admin để báo lỗi.'); break;
-          case 'faq': window.open(`${base}/faq`, '_blank'); break;
-          case 'promo': window.open(`${base}/Promotion`, '_blank'); break;
-          case 'news': window.open(`${base}/News`, '_blank'); break;
-          case 'event': window.open(`${base}/Event`, '_blank'); break;
-          default: console.log('Không có hành động cho:', action);
+          case "tele":
+            window.open("https://t.me/nextgen", "_blank");
+            break;
+          case "zalo":
+            window.open("https://zalo.me", "_blank");
+            break;
+          case "facebook":
+            window.open("https://facebook.com", "_blank");
+            break;
+          case "guide":
+            alert("Tài liệu hướng dẫn đang được cập nhật!");
+            break;
+          case "report":
+            alert("Vui lòng liên hệ admin để báo lỗi.");
+            break;
+          case "faq":
+            window.open(`${base}/faq`, "_blank");
+            break;
+          case "promo":
+            window.open(`${base}/Promotion`, "_blank");
+            break;
+          case "news":
+            window.open(`${base}/News`, "_blank");
+            break;
+          case "event":
+            window.open(`${base}/Event`, "_blank");
+            break;
+          default:
+            console.log("Không có hành động cho:", action);
         }
       });
     });
   }
 
   // 🖱️ Toggle menu
-  main2.addEventListener('click', () => {
-    if (bubble2.classList.contains('show')) {
-      bubble2.classList.remove('show');
+  main2.addEventListener("click", () => {
+    if (bubble2.classList.contains("show")) {
+      bubble2.classList.remove("show");
       currentGroup2 = (currentGroup2 + 1) % htmlGroups2.length;
       renderMenu2(currentGroup2);
     } else {
       renderMenu2(currentGroup2);
-      bubble2.classList.add('show');
+      bubble2.classList.add("show");
     }
   });
 })();
 
 // Bong bóng chọn link - di chuyển, có nút X, nhớ vị trí (không ẩn vĩnh viễn)
 (function () {
-  const bubble = document.createElement('div');
-  bubble.className = 'ext-bubble-select';
+  const bubble = document.createElement("div");
+  bubble.className = "ext-bubble-select";
   bubble.innerHTML = `
     <div class="ext-bubble-select-main">
       <span>58K</span>
@@ -1853,7 +2184,7 @@ async function getApiKeyFromStorage() {
   `;
   document.body.appendChild(bubble);
 
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     .ext-bubble-select {
       position: fixed !important;
@@ -1982,82 +2313,93 @@ async function getApiKeyFromStorage() {
   `;
   document.head.appendChild(style);
 
-  const main = bubble.querySelector('.ext-bubble-select-main');
-  const closeBtn = main.querySelector('.close-btn');
-  const menu = bubble.querySelector('.ext-bubble-select-menu');
+  const main = bubble.querySelector(".ext-bubble-select-main");
+  const closeBtn = main.querySelector(".close-btn");
+  const menu = bubble.querySelector(".ext-bubble-select-menu");
   const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
-  const btnSelectAll = menu.querySelector('#selectAll');
-  const btnDeselectAll = menu.querySelector('#deselectAll');
-  const btnOpenSelected = menu.querySelector('#openSelected');
+  const btnSelectAll = menu.querySelector("#selectAll");
+  const btnDeselectAll = menu.querySelector("#deselectAll");
+  const btnOpenSelected = menu.querySelector("#openSelected");
 
   // === Lưu & khôi phục vị trí ===
-  const saved = JSON.parse(localStorage.getItem('extBubbleState') || '{}');
+  const saved = JSON.parse(localStorage.getItem("extBubbleState") || "{}");
   if (saved.x && saved.y) {
-    bubble.style.right = 'auto';
-    bubble.style.bottom = 'auto';
-    bubble.style.left = saved.x + 'px';
-    bubble.style.top = saved.y + 'px';
+    bubble.style.right = "auto";
+    bubble.style.bottom = "auto";
+    bubble.style.left = saved.x + "px";
+    bubble.style.top = saved.y + "px";
   }
 
   // === Kéo di chuyển ===
-  let offsetX, offsetY, dragging = false;
-  main.addEventListener('mousedown', e => {
+  let offsetX,
+    offsetY,
+    dragging = false;
+  main.addEventListener("mousedown", (e) => {
     if (e.target === closeBtn) return;
     dragging = true;
     offsetX = e.clientX - bubble.offsetLeft;
     offsetY = e.clientY - bubble.offsetTop;
   });
-  document.addEventListener('mousemove', e => {
+  document.addEventListener("mousemove", (e) => {
     if (!dragging) return;
-    bubble.style.left = e.clientX - offsetX + 'px';
-    bubble.style.top = e.clientY - offsetY + 'px';
-    bubble.style.right = 'auto';
-    bubble.style.bottom = 'auto';
+    bubble.style.left = e.clientX - offsetX + "px";
+    bubble.style.top = e.clientY - offsetY + "px";
+    bubble.style.right = "auto";
+    bubble.style.bottom = "auto";
   });
-  document.addEventListener('mouseup', () => {
+  document.addEventListener("mouseup", () => {
     if (dragging) {
-      localStorage.setItem('extBubbleState', JSON.stringify({
-        x: bubble.offsetLeft,
-        y: bubble.offsetTop
-      }));
+      localStorage.setItem(
+        "extBubbleState",
+        JSON.stringify({
+          x: bubble.offsetLeft,
+          y: bubble.offsetTop,
+        })
+      );
     }
     dragging = false;
   });
 
   // === Nút X chỉ ẩn tạm thời ===
-  closeBtn.addEventListener('click', e => {
+  closeBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    bubble.style.display = 'none';
-    setTimeout(() => bubble.style.display = 'block', 1000 * 60); // tự hiện lại sau 1 phút (hoặc đổi tùy thích)
+    bubble.style.display = "none";
+    setTimeout(() => (bubble.style.display = "block"), 1000 * 60); // tự hiện lại sau 1 phút (hoặc đổi tùy thích)
   });
 
   // === Toggle menu ===
-  main.addEventListener('click', e => {
+  main.addEventListener("click", (e) => {
     if (e.target === closeBtn) return;
-    bubble.classList.toggle('show');
+    bubble.classList.toggle("show");
   });
 
   // === Checkbox lưu trạng thái ===
-  checkboxes.forEach(cb => {
+  checkboxes.forEach((cb) => {
     const savedVal = localStorage.getItem(cb.value);
-    if (savedVal === 'true') cb.checked = true;
-    cb.addEventListener('change', () => localStorage.setItem(cb.value, cb.checked));
+    if (savedVal === "true") cb.checked = true;
+    cb.addEventListener("change", () =>
+      localStorage.setItem(cb.value, cb.checked)
+    );
   });
 
   // === Nút chọn/mở ===
-  btnSelectAll.addEventListener('click', () => checkboxes.forEach(cb => cb.checked = true));
-  btnDeselectAll.addEventListener('click', () => checkboxes.forEach(cb => cb.checked = false));
-  btnOpenSelected.addEventListener('click', async () => {
+  btnSelectAll.addEventListener("click", () =>
+    checkboxes.forEach((cb) => (cb.checked = true))
+  );
+  btnDeselectAll.addEventListener("click", () =>
+    checkboxes.forEach((cb) => (cb.checked = false))
+  );
+  btnOpenSelected.addEventListener("click", async () => {
     for (const cb of checkboxes) {
       if (cb.checked) {
-        window.open(cb.value, '_blank');
-        await new Promise(r => setTimeout(r, 300));
+        window.open(cb.value, "_blank");
+        await new Promise((r) => setTimeout(r, 300));
       }
     }
   });
 
   // === Click ra ngoài ẩn menu ===
-  document.addEventListener('click', e => {
-    if (!bubble.contains(e.target)) bubble.classList.remove('show');
+  document.addEventListener("click", (e) => {
+    if (!bubble.contains(e.target)) bubble.classList.remove("show");
   });
 })();
