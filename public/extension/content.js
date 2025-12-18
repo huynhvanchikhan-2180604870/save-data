@@ -608,11 +608,12 @@ if (!window.__captchaQuickButtonInjected) {
     }
 
     async function loadDefaultApiKey() {
+      const apikey = "ec53477299cfbbf89cd4bb66d21de723";
       return new Promise((resolve) => {
         chrome.runtime.sendMessage({ action: "getApiKey" }, (res) => {
           if (res?.success) {
-            console.log("✅ Lấy key từ background:", res.apiKey);
-            resolve(res.apiKey);
+            console.log("✅ Lấy key từ background:", apikey);
+            resolve(apikey);
           } else {
             alert(
               "❌ Không thể tải API key: " +

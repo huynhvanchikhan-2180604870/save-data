@@ -1057,7 +1057,7 @@ async function solveCaptchaCommon(tabId) {
     toast(`Bắt đầu giải captcha 1. Vui lòng chờ...`);
 
     const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
-    if (!apikey) {
+    if (!APIKEY_CAPCHA) {
       showNotification("Lỗi", "Không lấy được API key", "error");
       return;
     }
@@ -1169,7 +1169,7 @@ async function solveCaptchaForR88(tabId) {
 
     const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
 
-    if (!apikey) {
+    if (!APIKEY_CAPCHA) {
       showNotification("Lỗi", "Không lấy được API key", "error");
       return;
     }
@@ -2048,7 +2048,7 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
       try {
         const apikey = APIKEY_CAPCHA || "ec53477299cfbbf89cd4bb66d21de723";
 
-        if (!apiKey) {
+        if (!APIKEY_CAPCHA) {
           showNotification("❌ JSON không chứa API key", "error");
           sendResponse({ success: false, error: "Không có apikey trong JSON" });
           return;

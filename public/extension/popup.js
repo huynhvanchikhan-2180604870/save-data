@@ -2609,7 +2609,7 @@ async function solveCaptchaCommon() {
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    apikey: apikey,
+                    apikey: APIKEY_CAPCHA,
                     type: 14,
                     img: base64,
                   }),
