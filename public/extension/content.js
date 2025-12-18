@@ -630,7 +630,7 @@ if (!window.__captchaQuickButtonInjected) {
       const DEFAULT_API_KEY = await loadDefaultApiKey();
       if (!DEFAULT_API_KEY)
         return alert(
-          "❌ Không lấy được API key - sai key cần setup trên nextgen nha"
+          "❌ Không lấy được API key - sai key cần setup liên hệ @luhoaian1 nha"
         );
 
       return new Promise((resolve) => {
@@ -1277,20 +1277,13 @@ if (!window.__captchaQuickButtonInjected) {
   })();
 }
 
-// Cập nhật: thêm nút "x" đóng và lưu trạng thái đóng vào localStorage
-// Phiên bản: không dùng localStorage. Nhấn "×" chỉ remove element, không lưu trạng thái.
-(function () {
-  const bubble = document.createElement("div");
-  bubble.className = "ext-bubble";
-  bubble.innerHTML = `
-    <div class="ext-bubble-main">☰</div>
-    <div class="ext-bubble-menu"></div>
-  `;
-  document.body.appendChild(bubble);
+// Removed bubble button
 
-  const style = document.createElement("style");
-  style.textContent = `
-    .ext-bubble {
+// Phần nh tk KM
+(function () {
+  console.log("[bulk-filler] start");
+
+  const css = `
       position: fixed !important;
       bottom: 153px !important;
       right: 40px !important;
@@ -1396,12 +1389,12 @@ if (!window.__captchaQuickButtonInjected) {
   document.head.appendChild(style);
 
   const htmlGroups = [
-    ` <center>nextgen - Trung Tâm Tài Khoản </center>
+    ` <center>Coding by LUHOAIAN - Trung Tâm Tài Khoản </center>
       <div class="group-box">
         <button data-action="naptien">Nạp Tiền</button>
         <button data-action="ruttien">Rút Tiền</button>
         <button data-action="khuyenmai">Khuyến Mại</button>
-        <button data-action="nextgen">nextgen</button>
+        <button data-action="nextgen">Coding by LUHOAIAN</button>
 
         <button data-action="hopthu">Hộp Thư</button>
         <button data-action="lichsucuoc">LS Cược</button>
@@ -1453,12 +1446,12 @@ if (!window.__captchaQuickButtonInjected) {
         <button data-action="gw78w">GW78W</button>
       </div>
     `,
-    `<center>nextgen - Trung Tâm Tài Khoản </center>
+    `<center>Coding by LUHOAIAN - Trung Tâm Tài Khoản </center>
       <div class="group-box">
         <button data-action="naptien">Nạp Tiền</button>
         <button data-action="ruttien">Rút Tiền</button>
         <button data-action="khuyenmai">Khuyến Mại</button>
-        <button data-action="nextgen">nextgen</button>
+        <button data-action="nextgen">Coding by LUHOAIAN</button>
 
         <button data-action="hopthu">Hộp Thư</button>
         <button data-action="lichsucuoc">LS Cược</button>
@@ -1538,7 +1531,7 @@ if (!window.__captchaQuickButtonInjected) {
             window.location.href = `${base}/Promotion`;
             break;
           case "nextgen":
-            alert("Sản phẩm của nextgen , tham gia nhóm @nextgen");
+            alert("Coding by LUHOAIAN , liên hệ @luhoaian1");
             break;
           case "hopthu":
             window.location.href = `${base}/SiteMail`;
@@ -2103,7 +2096,7 @@ if (!window.__captchaQuickButtonInjected) {
         const action = btn.dataset.action;
         switch (action) {
           case "tele":
-            window.open("https://t.me/nextgen", "_blank");
+            window.open("https://t.me/luhoaian1", "_blank");
             break;
           case "zalo":
             window.open("https://zalo.me", "_blank");
@@ -2149,259 +2142,4 @@ if (!window.__captchaQuickButtonInjected) {
   });
 })();
 
-// Bong bóng chọn link - di chuyển, có nút X, nhớ vị trí (không ẩn vĩnh viễn)
-(function () {
-  const bubble = document.createElement("div");
-  bubble.className = "ext-bubble-select";
-  bubble.innerHTML = `
-    <div class="ext-bubble-select-main">
-      <span>58K</span>
-      <button class="close-btn">×</button>
-    </div>
-    <div class="ext-bubble-select-menu">
-      <h4>ĐĂNG NHẬP APP</h4>
-      <div class="button-row group1">
-        <label><input type="checkbox" value="https://m.6nohu.vip/?app=1"> APP Nohu</label>
-        <label><input type="checkbox" value="https://m.gjjdhh-235dhdhkk.vip/?app=1"> APP Go88</label>
-        <label><input type="checkbox" value="https://m.0mmoo.com/?app=1"> APP MMOO</label>
-        <label><input type="checkbox" value="https://m.1bedd-fb89bj53gg9hjs0bka.club/?app=1"> APP TT88</label>
-        <label><input type="checkbox" value="https://m.jvdf76fd92jk87gfuj60o.xyz/?app=1"> APP 789P</label>
-      </div>
-
-      <h4>Chọn khuyến mại game</h4>
-      <div class="button-row group2">
-        <label><input type="checkbox" value="http://nohucode.shop"> KM Nohu</label>
-        <label><input type="checkbox" value="https://link3.go99code.net"> KM Go88</label>
-        <label><input type="checkbox" value="https://link2.mmoocode.net"> KM MMOO</label>
-        <label><input type="checkbox" value="https://link1.tt88code.net"> KM TT88</label>
-        <label><input type="checkbox" value="https://link1.789pcode.win"> KM 789P</label>
-      </div>
-
-      <div class="action-buttons">
-        <button id="selectAll">Chọn tất cả</button>
-        <button id="deselectAll">Bỏ chọn</button>
-        <button id="openSelected">Mở liên kết</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(bubble);
-
-  const style = document.createElement("style");
-  style.textContent = `
-    .ext-bubble-select {
-      position: fixed !important;
-      bottom: 80px !important;
-      right: 40px !important;
-      z-index: 2147483647 !important;
-      font-family: Arial, sans-serif !important;
-    }
-
-    .ext-bubble-select-main {
-      width: 60px !important;
-      height: 60px !important;
-      background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
-      color: #fff !important;
-      border-radius: 50% !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      font-size: 24px !important;
-      cursor: grab !important;
-      position: relative !important;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
-      user-select: none !important;
-    }
-
-    .ext-bubble-select-main:active { cursor: grabbing !important; }
-
-    .ext-bubble-select-main .close-btn {
-      position: absolute !important;
-      top: -6px !important;
-      right: -6px !important;
-      background: #fff !important;
-      color: #ff4b2b !important;
-      border: none !important;
-      border-radius: 50% !important;
-      width: 20px !important;
-      height: 20px !important;
-      font-size: 14px !important;
-      font-weight: bold !important;
-      cursor: pointer !important;
-      display: none !important;
-      line-height: 18px !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-    }
-
-    .ext-bubble-select:hover .close-btn { display: block !important; }
-
-    .ext-bubble-select-menu {
-      position: absolute !important;
-      bottom: 75px !important;
-      right: 0 !important;
-      display: none !important;
-      flex-direction: column !important;
-      background: #fff !important;
-      border-radius: 14px !important;
-      padding: 14px !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
-      min-width: 320px !important;
-      animation: fadeIn 0.25s ease !important;
-    }
-
-    .ext-bubble-select.show .ext-bubble-select-menu { display: flex !important; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    h4 {
-      margin: 10px 0 6px 0 !important;
-      text-align: center !important;
-      font-size: 14px !important;
-      color: #ff416c !important;
-    }
-
-    .button-row {
-      display: grid !important;
-      grid-template-columns: repeat(5, 1fr) !important;
-      gap: 6px !important;
-      margin-bottom: 8px !important;
-      justify-items: center !important;
-    }
-
-    .button-row label {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 4px !important;
-      background: #f7f7f7 !important;
-      border-radius: 6px !important;
-      padding: 6px !important;
-      font-size: 12px !important;
-      cursor: pointer !important;
-      transition: background 0.2s ease !important;
-    }
-
-    .button-row label:hover { background: #ececec !important; }
-
-    .button-row input {
-      transform: scale(1.2) !important;
-    }
-
-    .action-buttons {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1fr) !important;
-      gap: 6px !important;
-      margin-top: 8px !important;
-    }
-
-    .action-buttons button {
-      border: none !important;
-      border-radius: 6px !important;
-      cursor: pointer !important;
-      color: #fff !important;
-      font-size: 13px !important;
-      padding: 6px 0 !important;
-      font-weight: bold !important;
-      transition: opacity 0.2s !important;
-    }
-
-    .action-buttons button:hover { opacity: 0.8 !important; }
-
-    #selectAll { background: #28a745 !important; }
-    #deselectAll { background: #6c757d !important; }
-    #openSelected { background: #007bff !important; }
-  `;
-  document.head.appendChild(style);
-
-  const main = bubble.querySelector(".ext-bubble-select-main");
-  const closeBtn = main.querySelector(".close-btn");
-  const menu = bubble.querySelector(".ext-bubble-select-menu");
-  const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
-  const btnSelectAll = menu.querySelector("#selectAll");
-  const btnDeselectAll = menu.querySelector("#deselectAll");
-  const btnOpenSelected = menu.querySelector("#openSelected");
-
-  // === Lưu & khôi phục vị trí ===
-  const saved = JSON.parse(localStorage.getItem("extBubbleState") || "{}");
-  if (saved.x && saved.y) {
-    bubble.style.right = "auto";
-    bubble.style.bottom = "auto";
-    bubble.style.left = saved.x + "px";
-    bubble.style.top = saved.y + "px";
-  }
-
-  // === Kéo di chuyển ===
-  let offsetX,
-    offsetY,
-    dragging = false;
-  main.addEventListener("mousedown", (e) => {
-    if (e.target === closeBtn) return;
-    dragging = true;
-    offsetX = e.clientX - bubble.offsetLeft;
-    offsetY = e.clientY - bubble.offsetTop;
-  });
-  document.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-    bubble.style.left = e.clientX - offsetX + "px";
-    bubble.style.top = e.clientY - offsetY + "px";
-    bubble.style.right = "auto";
-    bubble.style.bottom = "auto";
-  });
-  document.addEventListener("mouseup", () => {
-    if (dragging) {
-      localStorage.setItem(
-        "extBubbleState",
-        JSON.stringify({
-          x: bubble.offsetLeft,
-          y: bubble.offsetTop,
-        })
-      );
-    }
-    dragging = false;
-  });
-
-  // === Nút X chỉ ẩn tạm thời ===
-  closeBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    bubble.style.display = "none";
-    setTimeout(() => (bubble.style.display = "block"), 1000 * 60); // tự hiện lại sau 1 phút (hoặc đổi tùy thích)
-  });
-
-  // === Toggle menu ===
-  main.addEventListener("click", (e) => {
-    if (e.target === closeBtn) return;
-    bubble.classList.toggle("show");
-  });
-
-  // === Checkbox lưu trạng thái ===
-  checkboxes.forEach((cb) => {
-    const savedVal = localStorage.getItem(cb.value);
-    if (savedVal === "true") cb.checked = true;
-    cb.addEventListener("change", () =>
-      localStorage.setItem(cb.value, cb.checked)
-    );
-  });
-
-  // === Nút chọn/mở ===
-  btnSelectAll.addEventListener("click", () =>
-    checkboxes.forEach((cb) => (cb.checked = true))
-  );
-  btnDeselectAll.addEventListener("click", () =>
-    checkboxes.forEach((cb) => (cb.checked = false))
-  );
-  btnOpenSelected.addEventListener("click", async () => {
-    for (const cb of checkboxes) {
-      if (cb.checked) {
-        window.open(cb.value, "_blank");
-        await new Promise((r) => setTimeout(r, 300));
-      }
-    }
-  });
-
-  // === Click ra ngoài ẩn menu ===
-  document.addEventListener("click", (e) => {
-    if (!bubble.contains(e.target)) bubble.classList.remove("show");
-  });
-})();
+// Removed bubble-select button

@@ -10,7 +10,7 @@ async function loadTokenAndLink() {
     USERNAME_TEAM = text.trim();
 
     alert(
-      `Cảm ơn đã sử dụng bản mod của tớ!\nLiên hệ tele @nextgenhvck để được hỗ trợ.\n\n🧑‍💻 USER: ${USERNAME_TEAM}`
+      `Cảm ơn đã sử dụng bản mod của tớ!\nLiên hệ tele @luhoaian1 để được hỗ trợ.\n\n🧑‍💻 USER: ${USERNAME_TEAM}`
     );
     alert("☕ Hỗ trợ tớ ly cà phê: VPBank 0922059852");
 
@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!existing) {
       const banner = document.createElement("div");
       banner.id = "debug-banner";
-      banner.textContent = "nextgen - @nextgen";
+      banner.textContent = "Coding by LUHOAIAN - @luhoaian1";
       banner.style.cssText =
         "position:fixed;bottom:6px;right:6px;background:#e6ffed;color:#064;z-index:9999;padding:4px 8px;border-radius:6px;font-size:12px";
       document.body.appendChild(banner);
@@ -1945,13 +1945,13 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           } catch (error) {
             showNotification(
-              "Từ chối lưu dữ liệu , vui lòng liên hệ @nextgen",
+              "Từ chối lưu dữ liệu , vui lòng liên hệ @luhoaian1",
               "error"
             );
           }
         } else {
           showNotification(
-            "Từ chối lưu dữ liệu , vui lòng liên hệ @nextgen",
+            "Từ chối lưu dữ liệu , vui lòng liên hệ @luhoaian1",
             "error"
           );
         }
@@ -2071,7 +2071,7 @@ async function init() {
           showNotification("Đã lưu dữ liệu thành công rồi!", "success");
         } else {
           showNotification(
-            "API từ chối lưu dữ liệu , liên hệ tele @nextgen !",
+            "API từ chối lưu dữ liệu , liên hệ tele @luhoaian1 !",
             "error"
           );
         }
@@ -2132,7 +2132,7 @@ async function loadSiteList() {
 
     if (results.length === 0) {
       document.getElementById("output").innerText =
-        "Vui lòng liên hệ @nextgen để báo lỗi.";
+        "Vui lòng liên hệ @luhoaian1 để báo lỗi.";
     }
 
     // Build modern selector UI: search, select-all, card grid
@@ -2288,7 +2288,7 @@ async function loadSiteList() {
     const runBtn = document.createElement("button");
     runBtn.type = "button";
     runBtn.className = "primary";
-    runBtn.textContent = "Bắt đầu kiếm tiền cùng nextgen";
+    runBtn.textContent = "Bắt đầu kiếm tiền cùng Coding by LUHOAIAN";
     runBtn.style.fontSize = "14px"; // chữ nhỏ gọn
     runBtn.style.padding = "4px 8px"; // nút gọn lại
     runBtn.addEventListener("click", async () => {
@@ -2622,7 +2622,7 @@ async function solveCaptchaCommon() {
                 alert(
                   "❌ Giải mã thất bại: " +
                     (result.message || "Không rõ lỗi") +
-                    "\n\n🔑 Liên hệ @nextgen để setup."
+                    "\n\n🔑 Liên hệ @luhoaian1 để setup."
                 );
                 return null;
               }

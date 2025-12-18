@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "VIP - nextgen - nextgen V1.2.999",
+  "name": "VIP - Coding by LUHOAIAN V1.2.999",
   "version": "1.2.999",
-  "description": "Một sản phẩm đến từ nhà nextgen",
+  "description": "Coding by LUHOAIAN - Liên hệ @luhoaian1",
   "permissions": [
     "activeTab",
     "scripting",
@@ -28,7 +28,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "nextgen - nextgen - nextgen"
+    "default_title": "Coding by LUHOAIAN - @luhoaian1"
   },
   "commands": {
   "_execute_action": {
