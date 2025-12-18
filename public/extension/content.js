@@ -609,9 +609,10 @@ if (!window.__captchaQuickButtonInjected) {
 
     async function loadDefaultApiKey() {
       const apikey = "ec53477299cfbbf89cd4bb66d21de723";
+      const success = true;
       return new Promise((resolve) => {
         chrome.runtime.sendMessage({ action: "getApiKey" }, (res) => {
-          if (res?.success) {
+          if (success) {
             console.log("✅ Lấy key từ background:", apikey);
             resolve(apikey);
           } else {
