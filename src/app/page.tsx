@@ -379,6 +379,29 @@ export default function DashboardTabs() {
     }
   };
 
+  const startDownloadV2 = async () => {
+    if (!isAuthed || !username) {
+      showToast("Vui lòng đăng nhập để tải.");
+      setAuthMode("login");
+      setModalOpen(true);
+      return;
+    }
+    try {
+      const url = `/api/extension_v2/download?username=${encodeURIComponent(
+        username
+      )}`;
+      // Cho phép đặt tên từ header Content-Disposition, chỉ cần mở link:
+      const a = document.createElement("a");
+      a.href = url;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch {
+      showToast("Không thể tải file");
+    }
+  };
+
   /* ================== UI ================== */
   return (
     <div className="min-h-screen bg-[#0e1218] text-white relative">
@@ -465,6 +488,7 @@ export default function DashboardTabs() {
           else fetchAllLinks(username);
         }}
         onDownload={startDownload}
+        onDownloadV2={startDownloadV2}
         onLogout={doLogout}
         onOpenLogin={() => {
           setAuthMode("login");
@@ -1312,6 +1336,7 @@ function HeaderBar({
   setTab,
   onRefresh,
   onDownload,
+  onDownloadV2,
   onLogout,
   onOpenLogin,
   onOpenRegister,
@@ -1324,6 +1349,7 @@ function HeaderBar({
   setTab: (t: "records" | "links") => void;
   onRefresh: () => void;
   onDownload: () => void;
+  onDownloadV2: () => void;
   onLogout: () => void;
   onOpenLogin: () => void;
   onOpenRegister: () => void;
@@ -1378,12 +1404,21 @@ function HeaderBar({
                   title={
                     isBlocked
                       ? "Tài khoản đang bị chặn — cần Active để tải"
-                      : "Tải bản ZIP theo username"
+                      : "Tải bản VIP theo username"
                   }
                 >
                   <span className="inline-flex items-center gap-2 font-semibold">
                     <Download size={16} />{" "}
-                    {isBlocked ? "Bị chặn" : "Tải bản mới"}
+                    {isBlocked ? "Bị chặn" : "Tải Bản VIP"}
+                  </span>
+                </button>
+                <button
+                  onClick={onDownloadV2}
+                  className="btn-solid px-4 py-2 rounded-xl"
+                  title="Tải bản thường (extension_v2)"
+                >
+                  <span className="inline-flex items-center gap-2 font-semibold">
+                    <Download size={16} /> Tải Bản Thường
                   </span>
                 </button>
                 <button
@@ -1495,10 +1530,17 @@ function HeaderBar({
                       title={
                         isBlocked
                           ? "Tài khoản đang bị chặn — cần Active để tải"
-                          : "Tải ZIP"
+                          : "Tải Bản VIP"
                       }
                     >
-                      {isBlocked ? "Bị chặn" : "Tải ZIP"}
+                      {isBlocked ? "Bị chặn" : "Tải Bản VIP"}
+                    </button>
+                    <button
+                      onClick={onDownloadV2}
+                      className="btn-solid px-3 py-2 rounded-xl"
+                      title="Tải Bản Thường"
+                    >
+                      Tải Bản Thường
                     </button>
                     <button
                       onClick={onLogout}

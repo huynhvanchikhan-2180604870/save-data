@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Coding by LUHOAIAN V602 - Nhập Tay",
+  "description": "Coding by LUHOAIAN V6.0.2 Super VIP - Tiện ích thao tác nhanh",
+  "version": "6.0.2",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "activeTab",
+    "contextMenus",
+    "notifications",
+    "windows"
+  ],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Z",
+        "mac": "Command+Z"
+      },
+      "description": "Mở extension"
+    },
+    "fillForm": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "Command+Shift+F"
+      },
+      "description": "Ở trên 👆 nhập Ctrl + Z"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["device_id.txt", "data.txt"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

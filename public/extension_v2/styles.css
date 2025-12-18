@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #4B9DA9;
+    padding: 20px;
+    width: 350px;
+}
+.container {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+textarea {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+}
+button {
+    background: #607B8F;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+button:hover {
+    background: #5a6f7f;
+}
+.hidden {
+    display: none;
+}
+.data-container {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+.editable {
+    cursor: pointer;
+    color: #007bff;
+}
+.editable:hover {
+    text-decoration: underline;
+}

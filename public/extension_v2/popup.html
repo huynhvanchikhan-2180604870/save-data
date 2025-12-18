@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding by LUHOAIAN Extension</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #4B9DA9;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            /* canh giữa ngang */
+            align-items: center;
+            /* canh giữa dọc */
+            min-height: 100vh;
+            /* toàn màn hình */
+        }
+
+        .wrapper {
+            width: 360px;
+            background: #4B9DA9;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(75, 157, 169, 0.4);
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 2px solid rgba(96, 123, 143, 0.3);
+            color: #2d3748;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .tab:hover {
+            background: rgba(96, 123, 143, 0.2);
+            color: #2d3748;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #607B8F;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .container {
+            padding: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 90%;
+            padding: 8px;
+            background: #ffffff;
+            border: 1px solid rgba(96, 123, 143, 0.4);
+            border-radius: 5px;
+            color: #2d3748;
+            font-size: 12px;
+            box-sizing: border-box;
+            /* fix tràn */
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2d3748;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(96, 123, 143, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #607B8F;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #5a6f7f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid rgba(96, 123, 143, 0.3);
+            color: #2d3748;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .shortcut-btn {
+            background: #607B8F;
+        }
+
+        .shortcut-btn:hover {
+            background: #5a6f7f;
+        }
+
+        .captcha-btn {
+            background: #e74c3c;
+        }
+
+        .captcha-btn:hover {
+            background: #c0392b;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid rgba(96, 123, 143, 0.3);
+            color: #2d3748;
+        }
+    </style>
+</head>
+
+
+
+
+
+
+
+
+<!-- Đã loại bỏ hoàn toàn errorContentB - không cần key system -->
+
+<div class="" id="mainContentA" style="display:block;">
+
+
+    <div class="wrapper">
+        <header>Kiếm tiền cùng Coding by LUHOAIAN V602</header>
+        <div class="notification" id="tb-display" class">Liên hệ @luhoaian1 </div>
+        <div class="notification" id="tb-display2" class"><a href="https://t.me/luhoaian1" target="_blank"
+                style="color: #607B8F; font-weight: bold;">Coding by LUHOAIAN [VIP]</a></div>
+
+
+
+
+
+
+        <!-- Thanh tab -->
+        <div class="tabs">
+            <div class="tab active" id="btn1">CODING BY LUHOAIAN</div>
+            <div class="tab" id="btn2">TIỆN ÍCH</div>
+            <div class="tab" id="btn3">SP-LUHOAIAN</div>
+        </div>
+
+        </center>
+
+
+        <div id="tab1"></br>
+            <center><textarea id="dataInput"
+                    placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua excel tele @luhoaian1---"
+                    rows="3"></textarea></center>
+
+            <center>
+                <button class="btn shortcut-btn" id="pasteButton">Dán</button>
+                <button class="btn shortcut-btn" id="saveData">Lưu Dữ Liệu</button>
+                <button class="btn shortcut-btn" id="toggleButton">Hiện/Ẩn</button>
+            </center>
+            <!-- Thêm phần tử này vào vị trí mong muốn trong HTML của bạn -->
+            <div id="notification"
+                style="display: none; padding: 10px; background-color: #4CAF50; color: white; margin-top: 10px;">
+                Dữ liệu đã được lưu!
+            </div>
+
+            <div class="card" style="
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+    justify-content: space-around;
+">
+                <strong>
+                    <strong>
+                        <pre id="displayData" style="display:none;">Đây là dữ liệu cần hiển thị hoặc ẩn.</pre>
+                    </strong>
+            </div>
+            <div id="content" style="display: block;">
+                <center><b>
+                        <h3>Cần làm : hãy cài đặt phím tắt (Mặc định Ctrl Z) <button
+                                id="openShortcutsBtn">+Nút_Shortcut+</button></br>Tiếp theo : Chọn "Kiểu Giao Diện"
+                            nhà cái</h3>
+                    </b></center>
+            </div></br>
+
+            <style>
+                .tab {
+                    display: inline-block;
+                    padding: 10px 15px;
+                    background: rgba(255, 255, 255, 0.9);
+                    color: #2d3748;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    margin: 5px;
+                    position: relative;
+                }
+
+                /* Tooltip ẩn mặc định */
+                .tab::after {
+                    content: attr(data-text);
+                    /* Lấy nội dung từ data-text */
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    bottom: -28px;
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 5px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.3s ease;
+                }
+
+                /* Khi hover thì hiện */
+                .tab:hover::after {
+                    opacity: 1;
+                }
+            </style>
+            <div class="tabs">
+                <div class="tab" id="btnA" data-text="ví dụ New88 , F8bet, 8kbet">Kiểu Chung</div>
+                <div class="tab" id="btnB" data-text="ví dụ QQ88, 78WIn , Junv1">Kiểu khác</div>
+                <div class="tab" id="btnC" data-text="Link nhận KM ">Nhận KM</div>
+
+            </div>
+            </br>
+            <div id="contentA" style="display: none;">
+                <center>
+                    <button class="btn shortcut-btn" id="solveBtn" style="background: #fb00ff;">Giải Captcha</button>
+                </center></br>
+
+                <div class="button-group" style="justify-content: center;">
+                    <button class="btn shortcut-btn" id="fillForm">Nhập_Data</button>
+                    <button class="btn shortcut-btn" id="addPassword">Pass_Rút</button>
+                    <button class="btn shortcut-btn" id="fillFormBank">STK_City</button><br>
+                </div>
+
+                <center>
+                    <button class="btn shortcut-btn" id="goLinkNap">Link_Nạp</button>
+                    <button class="btn shortcut-btn" id="goLinkPass">Link_Pass</button>
+                    <button class="btn shortcut-btn" id="goLinkBank">Link_Bank</button>
+                </center>
+                <center></br><button class="btn shortcut-btn" id="clickButton">Nút Submit</button></center>
+
+            </div>
+            <center>
+
+
+
+
+
+            </center>
+            <div id="contentB" style="display: none;">
+                <center>
+                    <button class="btn shortcut-btn" id="fillFormMB66">Nhập JunV1</button>
+                    <button class="btn shortcut-btn" id="fillForm78WIN">Nhập 78WIN</button>
+                    <button class="btn shortcut-btn" id="fillFormQQ88">Nhập QQ88</button>
+                </center>
+                </br>
+                <center>
+                    <button class="btn shortcut-btn" id="solveCaptcha9" style="background: #fb00ff;">Giải XXX</button>
+                    <button class="btn shortcut-btn" id="solveCaptcha3" style="background: #fb00ff;">Giải 78Win</button>
+                    <button class="btn shortcut-btn" id="solveCaptcha2" style="background: #fb00ff;">Giải QQ88</button>
+                </center></br>
+            </div>
+        </div>
+
+        <div id="contentC" style="display: none;">
+            </br>
+            <center>
+                <button class="btn shortcut-btn" id="ThemTK">Nhập TK + Giải mã</button></br></br>
+
+                <button id="btnlink1" class="btn shortcut-btn">789BET</button>
+                <button id="btnlink2" class="btn shortcut-btn">NEW88</button>
+                <button id="btnlink3" class="btn shortcut-btn">SHBET</button>
+                <button id="btnlink4" class="btn shortcut-btn">MB66</button>
+            </center></br>
+            <center>
+                <button id="btnlink5" class="btn shortcut-btn">HI88</button>
+                <button id="btnlink6" class="btn shortcut-btn">F8BET</button>
+                <button id="btnlink7" class="btn shortcut-btn">JUN88</button>
+                <button id="btnlink8" class="btn shortcut-btn">78WIN</button>
+            </center></br>
+
+            <center> <button id="solveBtnKM" class="btn shortcut-btn">Captcha KM</button>
+                <button id="solveCaptchaokvip" class="btn shortcut-btn">CaptchaOkvip</button>
+            </center>
+        </div>
+
+
+
+        <div id="tab2" style="display:none;">
+
+            </br>
+            <center><b>
+                    <div id="ip-display" class">Đang check IP...</div>
+                    <a href="https://t.me/luhoaian1" class="button" target="_blank" style="
+    color: #607B8F;
+">Liên hệ Telegram</a></br>
+                    Tên web : <a id="domainLink" href="#" target="_blank" style="
+    color: #607B8F;
+">>Loading...</a>
+                </b></br></br>
+                <!-- Các nút liên kết -->
+                <button id="openShortcutsBtn2">+Nút_Shortcut+</button>
+            </center>
+            <div class="card" style="
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0;
+    padding: 18px;
+    color: #2d3748;
+">
+                <h2>🎛️ Trang quản lý dữ liệu</h2>
+                <p> Ctrl + Shift + A = Nhập data (kiểu chung)</br>
+                    Ctrl + Shift + S = Nhập Pass (kiểu chung)</br>
+                    Ctrl + Shift + D = Nhập City (kiểu chung)</br>
+                    Ctrl + Shift + Z = Nhập data (kiểu khác)</p>
+                <a id="domainLink" href="https://t.me/luhoaian1" target="_blank"><button id="goToManager" class="btn">👉 Liên hệ Telegram</button></a>
+            </div>
+
+
+
+            <a href="https://t.me/luhoaian1" class="button" target="_blank" style="
+    color: #607B8F;
+">
+                Liên hệ @luhoaian1
+            </a>
+        </div>
+        <div id="tab3" style="display:none;">
+            </br></br>
+            <center>
+                <input type="text" id="fullName" placeholder="Họ và tên"><br><br>
+                <input type="text" id="accountNumber" placeholder="Số tài khoản"><br><br>
+                <input type="text" id="bankName" placeholder="Tên ngân hàng"><br><br>
+                <textarea id="resultdata"
+                    placeholder="HọTên|STK|TênBank|Chinhánh|Username|Pass|Pass Rút|SÐT|gmail|Ngày sinh  ---Liên Hệ mua excel tele @luhoaian1---"
+                    rows="3"></textarea>
+            </center><!-- THÔNG BÁO -->
+
+            <center>
+                <div id="saveStatus" style="margin-top: 10px; color: green;"></div>
+                <div id="teleStatus" style="margin-top: 10px; color: green;"></div> <button class="btn shortcut-btn"
+                    id="generate">Tạo dữ liệu</button>
+                <button class="btn shortcut-btn" id="save">Lưu</button>
+                <center></br>
+                    <div><b>Liên hệ @luhoaian1 để được hỗ trợ</b></div>
+
+                    <a href="https://t.me/luhoaian1" target="_blank">Liên hệ Telegram</a>
+        </div>
+
+        </br></br>
+        <footer>© Coding by LUHOAIAN V6.02</footer>
+
+        <script src="popup.js"></script>
+        <script src="popup2.js"></script>
+    </div>
+
+
+
+    </body>
+
+</html>
