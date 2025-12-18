@@ -9,15 +9,10 @@ async function loadTokenAndLink() {
     const text = await response.text();
     USERNAME_TEAM = text.trim();
 
-    alert(
-      `Cảm ơn đã sử dụng bản mod của tớ!\nLiên hệ tele @luhoaian1 để được hỗ trợ.\n\n🧑‍💻 USER: ${USERNAME_TEAM}`
-    );
-    alert("☕ Hỗ trợ tớ ly cà phê: VPBank 0922059852");
-
     console.log("✅ USERNAME_TEAM:", USERNAME_TEAM);
   } catch (err) {
-    console.error("❌ Không đọc được active.txt:", err);
-    alert("Không thể đọc file active.txt. Kiểm tra lại đường dẫn.");
+    console.error("❌ Không đọc được username:", err);
+    alert("Không thể đọc file username. Kiểm tra lại đường dẫn.");
   }
 }
 
